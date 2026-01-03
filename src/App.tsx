@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react'
-import { useKV } from '@github/spark/hooks'
-import { ArrowsClockwise, Keyboard, Plus } from '@phosphor-icons/react'
+import { useEffect, useState } from 'react'
+import { ArrowsClockwise, Keyboard } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { HeroCard } from '@/components/HeroCard'
 import { PowerEditDialog } from '@/components/PowerEditDialog'
@@ -8,12 +7,21 @@ import { GameInitDialog } from '@/components/GameInitDialog'
 import { KeyboardShortcuts } from '@/components/KeyboardShortcuts'
 import { Hero, Power, GameState } from '@/lib/types'
 import { Toaster, toast } from 'sonner'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { usePersistentState } from '@/hooks/usePersistentState'
 
 function App() {
-  const [gameState, setGameState] = useKV<GameState>('marvel-zombies-game', {
-    heroes: [],
-    initialized: false,
-  })
+  const [gameState, setGameState, storageAvailable] = usePersistentState<GameState>(
+    'marvel-zombies-game',
+    {
+      heroes: [],
+      initialized: false,
+    }
+  )
+
+  const [showTemporarySessionBanner, setShowTemporarySessionBanner] = useState(
+    () => !storageAvailable
+  )
 
   const [editingPower, setEditingPower] = useState<{
     heroId: string
@@ -23,12 +31,6 @@ function App() {
 
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
   const [showInitDialog, setShowInitDialog] = useState(false)
-
-  useEffect(() => {
-    if (!gameState?.initialized) {
-      setShowInitDialog(true)
-    }
-  }, [gameState?.initialized])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -45,6 +47,12 @@ function App() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
+
+  useEffect(() => {
+    if (storageAvailable) {
+      setShowTemporarySessionBanner(false)
+    }
+  }, [storageAvailable])
 
   const handleStartNewGame = (heroCount: number) => {
     const newHeroes: Hero[] = Array.from({ length: heroCount }).map((_, index) => ({
@@ -105,9 +113,37 @@ function App() {
     toast.success('Power saved')
   }
 
+  const temporarySessionBanner =
+    !storageAvailable && showTemporarySessionBanner ? (
+      <div className="w-full border-b border-destructive/30 bg-destructive/5">
+        <div className="container mx-auto px-4 py-3">
+          <Alert variant="destructive" className="shadow-xs">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <AlertTitle>Temporary session</AlertTitle>
+                <AlertDescription>
+                  Local storage isn't available, so this session will reset on reload. Progress
+                  won't persist until storage is restored.
+                </AlertDescription>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowTemporarySessionBanner(false)}
+                className="self-start sm:self-auto"
+              >
+                OK, I KNOW THIS IS TEMPORARY
+              </Button>
+            </div>
+          </Alert>
+        </div>
+      </div>
+    ) : null
+
   if (!gameState?.initialized) {
     return (
       <>
+        {temporarySessionBanner}
         <GameInitDialog
           hasExistingGame={false}
           onStartNew={handleStartNewGame}
@@ -128,6 +164,7 @@ function App() {
   return (
     <div className="min-h-screen bg-background">
       <Toaster position="top-right" />
+      {temporarySessionBanner}
 
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -179,11 +216,13 @@ function App() {
         onSave={handleSavePower}
       />
 
-      <GameInitDialog
-        hasExistingGame={showInitDialog && (gameState?.initialized || false)}
-        onStartNew={handleStartNewGame}
-        onContinue={handleContinueGame}
-      />
+      {showInitDialog && (
+        <GameInitDialog
+          hasExistingGame={gameState?.initialized || false}
+          onStartNew={handleStartNewGame}
+          onContinue={handleContinueGame}
+        />
+      )}
 
       <KeyboardShortcuts open={showKeyboardHelp} onClose={() => setShowKeyboardHelp(false)} />
     </div>
