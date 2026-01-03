@@ -1,5 +1,6 @@
 import { Heart } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
+import { HeartIcon } from 'lucide-react'
 
 interface HealthIndicatorProps {
   health: number
@@ -25,7 +26,7 @@ export function HealthIndicator({ health, maxHealth, onChange, className }: Heal
             )}
             aria-label={`Health point ${index + 1}`}
           >
-            <Heart weight={filled ? 'fill' : 'regular'} className="w-full h-full p-2" />
+            <HeartIcon fill={filled ? 'currentColor' : 'none'}  className="w-full h-full p-2" />
           </button>
         )
       })}

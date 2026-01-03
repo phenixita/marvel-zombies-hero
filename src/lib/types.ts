@@ -13,6 +13,5 @@ export interface Hero {
 }
 
 export interface GameState {
-  heroes: Hero[]
-  initialized: boolean
+  heroes: Hero[] 
 }

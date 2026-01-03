@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
-import { ArrowsClockwise, Keyboard } from '@phosphor-icons/react'
-import { Button } from '@/components/ui/button'
-import { HeroCard } from '@/components/HeroCard'
 import { PowerEditDialog } from '@/components/PowerEditDialog'
 import { GameInitDialog } from '@/components/GameInitDialog'
 import { KeyboardShortcuts } from '@/components/KeyboardShortcuts'
+import { Header } from '@/components/Header'
+import { HeroGrid } from '@/components/HeroGrid'
 import { Hero, Power, GameState } from '@/lib/types'
 import { Toaster, toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -14,11 +13,10 @@ function App() {
   const [gameState, setGameState] = usePersistentState<GameState>(
     'marvel-zombies-game',
     {
-      heroes: [],
-      initialized: false,
+      heroes: []
     }
   )
- 
+
   const [editingPower, setEditingPower] = useState<{
     heroId: string
     powerIndex: number
@@ -43,7 +41,7 @@ function App() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
- 
+
 
   const handleStartNewGame = (heroCount: number) => {
     const newHeroes: Hero[] = Array.from({ length: heroCount }).map((_, index) => ({
@@ -56,7 +54,6 @@ function App() {
 
     setGameState({
       heroes: newHeroes,
-      initialized: true,
     })
 
     setShowInitDialog(false)
@@ -70,7 +67,6 @@ function App() {
   const handleUpdateHero = (updatedHero: Hero) => {
     setGameState((current) => ({
       heroes: current?.heroes.map((h) => (h.id === updatedHero.id ? updatedHero : h)) || [],
-      initialized: current?.initialized || false,
     }))
   }
 
@@ -97,19 +93,17 @@ function App() {
         }
         return hero
       }) || [],
-      initialized: current?.initialized || false,
     }))
 
     setEditingPower(null)
     toast.success('Power saved')
   }
- 
 
-  if (!gameState?.initialized) {
+
+  if (!gameState?.heroes || gameState.heroes.length === 0) {
     return (
-      <> 
+      <>
         <GameInitDialog
-          hasExistingGame={false}
           onStartNew={handleStartNewGame}
           onContinue={handleContinueGame}
         />
@@ -127,49 +121,20 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Toaster position="top-right" /> 
-
+      <Toaster position="top-right" />
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="font-rajdhani font-bold text-3xl uppercase tracking-tight text-accent">
-              Marvel Zombies
-            </h1>
-            <p className="text-sm text-muted-foreground">Hero Turn Tracker</p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowKeyboardHelp(true)}
-              title="Keyboard Shortcuts (Ctrl/Cmd+K)"
-            >
-              <Keyboard className="w-5 h-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => setShowInitDialog(true)}
-              title="New Game (Ctrl/Cmd+N)"
-            >
-              <ArrowsClockwise className="w-5 h-5 mr-2" />
-              New Game
-            </Button>
-          </div>
-        </div>
+        <Header
+          onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
+          onNewGame={() => setShowInitDialog(true)}
+        />
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {gameState?.heroes.map((hero) => (
-            <HeroCard
-              key={hero.id}
-              hero={hero}
-              onUpdateHero={handleUpdateHero}
-              onEditPower={(powerIndex) => handleEditPower(hero.id, powerIndex)}
-            />
-          ))}
-        </div>
+        <HeroGrid
+          heroes={gameState?.heroes || []}
+          onUpdateHero={handleUpdateHero}
+          onEditPower={handleEditPower}
+        />
       </main>
 
       <PowerEditDialog
@@ -181,7 +146,6 @@ function App() {
 
       {showInitDialog && (
         <GameInitDialog
-          hasExistingGame={gameState?.initialized || false}
           onStartNew={handleStartNewGame}
           onContinue={handleContinueGame}
         />
