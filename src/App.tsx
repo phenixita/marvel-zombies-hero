@@ -106,6 +106,7 @@ function App() {
         <GameInitDialog
           onStartNew={handleStartNewGame}
           onContinue={handleContinueGame}
+          onClose={() => {}}
         />
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center space-y-4">
@@ -148,6 +149,7 @@ function App() {
         <GameInitDialog
           onStartNew={handleStartNewGame}
           onContinue={handleContinueGame}
+          onClose={() => setShowInitDialog(false)}
         />
       )}
 

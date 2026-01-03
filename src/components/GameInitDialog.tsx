@@ -21,18 +21,19 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-interface GameInitDialogProps { 
+interface GameInitDialogProps {
   onStartNew: (heroCount: number) => void
   onContinue: () => void
+  onClose?: () => void
 }
 
-export function GameInitDialog({   onStartNew, onContinue }: GameInitDialogProps) {
+export function GameInitDialog({   onStartNew, onContinue, onClose }: GameInitDialogProps) {
  
   const [showHeroCountDialog, setShowHeroCountDialog] = useState(true)
   const [heroCount, setHeroCount] = useState(4)
- 
 
-  const handleConfirmReset = () => { 
+
+  const handleConfirmReset = () => {
     setShowHeroCountDialog(true)
   }
 
@@ -41,11 +42,14 @@ export function GameInitDialog({   onStartNew, onContinue }: GameInitDialogProps
     setShowHeroCountDialog(false)
     onStartNew(count)
   }
- 
+
   return (
     <>
-    
-      <Dialog open={showHeroCountDialog} onOpenChange={setShowHeroCountDialog} >
+
+      <Dialog open={showHeroCountDialog} onOpenChange={(open) => {
+        setShowHeroCountDialog(open)
+        if (!open) onClose?.()
+      }} >
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
             <DialogTitle className="font-rajdhani text-2xl uppercase">
@@ -78,7 +82,10 @@ export function GameInitDialog({   onStartNew, onContinue }: GameInitDialogProps
           </div>
 
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowHeroCountDialog(false)}>
+            <Button variant="ghost" onClick={() => {
+              setShowHeroCountDialog(false)
+              onClose?.()
+            }}>
               Cancel
             </Button>
             <Button onClick={handleCreateGame}>

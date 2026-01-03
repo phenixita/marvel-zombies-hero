@@ -13,5 +13,5 @@ export interface Hero {
 }
 
 export interface GameState {
-  heroes: Hero[] 
+  heroes: Hero[]
 }
