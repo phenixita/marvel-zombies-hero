@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { PencilSimple } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { HealthIndicator } from '@/components/HealthIndicator'
@@ -54,6 +55,20 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
     }
 
     onUpdateHero({ ...hero, ...updates })
+  }
+
+  const getLevelColor = (level: number): string => {
+    if (level <= 6) return 'bg-blue-500'
+    if (level <= 21) return 'bg-yellow-500'
+    if (level <= 42) return 'bg-orange-500'
+    return 'bg-red-500'
+  }
+
+  const getLevelCategory = (level: number): string => {
+    if (level <= 6) return 'Blue'
+    if (level <= 21) return 'Yellow'
+    if (level <= 42) return 'Orange'
+    return 'Red'
   }
 
   return (
@@ -111,6 +126,10 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
                 </Button>
               </div>
             )}
+            
+            <Badge className={cn('text-white border-0 text-xs', getLevelColor(hero.level))}>
+              Lvl {hero.level} - {getLevelCategory(hero.level)}
+            </Badge>
           </div>
 
           <HealthIndicator

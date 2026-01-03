@@ -5,6 +5,7 @@ import { StartTurnDialog } from '@/components/StartTurnDialog'
 import { KeyboardShortcuts } from '@/components/KeyboardShortcuts'
 import { Header } from '@/components/Header'
 import { HeroGrid } from '@/components/HeroGrid'
+import { TurnTrackerSidebar } from '@/components/TurnTrackerSidebar'
 import { Hero, Power, GameState, Turn, Round } from '@/lib/types'
 import { Toaster, toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -55,6 +56,7 @@ function App() {
       name: `Hero ${index + 1}`,
       health: 5,
       hunger: 0,
+      level: 0,
       powers: [],
       availableActions: 3,
     }))
@@ -191,7 +193,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Toaster position="top-right" />
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
         <Header
@@ -201,14 +203,18 @@ function App() {
         />
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <HeroGrid
-          heroes={gameState?.heroes || []}
-          onUpdateHero={handleUpdateHero}
-          onEditPower={handleEditPower}
-          activeTurnHeroId={gameState?.currentTurn?.heroId}
-        />
-      </main>
+      <div className="flex flex-1">
+        <TurnTrackerSidebar gameState={gameState} onUpdateHero={handleUpdateHero} />
+
+        <main className="flex-1 container mx-auto px-4 py-8">
+          <HeroGrid
+            heroes={gameState?.heroes || []}
+            onUpdateHero={handleUpdateHero}
+            onEditPower={handleEditPower}
+            activeTurnHeroId={gameState?.currentTurn?.heroId}
+          />
+        </main>
+      </div>
 
       <PowerEditDialog
         open={editingPower !== null}
