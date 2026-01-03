@@ -5,4 +5,4 @@ The available action types are:
 - Move
 - Interact
 - Open door
- 
+- Gain Trait

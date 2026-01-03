@@ -1,14 +1,4 @@
-import { useState } from 'react'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -17,9 +7,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useState } from 'react'
 
 interface GameInitDialogProps {
   onStartNew: (heroCount: number) => void
@@ -27,10 +17,11 @@ interface GameInitDialogProps {
   onClose?: () => void
 }
 
-export function GameInitDialog({   onStartNew, onContinue, onClose }: GameInitDialogProps) {
- 
+export function GameInitDialog({ onStartNew, onContinue, onClose }: GameInitDialogProps) {
+
+  const INIT_DEFAULT_HERO_COUNT = 2
   const [showHeroCountDialog, setShowHeroCountDialog] = useState(true)
-  const [heroCount, setHeroCount] = useState(4)
+  const [heroCount, setHeroCount] = useState(INIT_DEFAULT_HERO_COUNT)
 
 
   const handleConfirmReset = () => {

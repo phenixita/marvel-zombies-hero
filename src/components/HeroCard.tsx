@@ -1,14 +1,14 @@
-import { useState } from 'react'
-import { PencilSimple } from '@phosphor-icons/react'
-import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import { HealthIndicator } from '@/components/HealthIndicator'
 import { HungerScale } from '@/components/HungerScale'
 import { PowerSlot } from '@/components/PowerSlot'
-import { Hero, Power, TurnPhase } from '@/lib/types'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Hero, TurnPhase } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { PencilSimple } from '@phosphor-icons/react'
+import { useState } from 'react'
 
 interface HeroCardProps {
   hero: Hero
@@ -58,10 +58,11 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
     onUpdateHero({ ...hero, powers: newPowers })
   }
 
-  const handleAction = (action: 'devour' | 'attack' | 'collect') => {
+  const handleAction = (action: 'devour' | 'attack' | 'move' | 'interact' | 'open_door' | 'gain_trait') => {
     const currentActions = hero.availableActions ?? 0
     if (currentActions <= 0) return
 
+    // Special actions that open dialogs
     if (action === 'attack') {
       onAttack?.(hero.id)
       return
@@ -72,8 +73,9 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
       return
     }
 
+    // Generic actions simply consume an action
     const updates: Partial<Hero> = {
-      availableActions: currentActions - 1
+      availableActions: Math.max(0, currentActions - 1)
     }
 
     onUpdateHero({ ...hero, ...updates })
@@ -236,9 +238,36 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
                   variant="secondary"
                   className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
                   disabled={actionsExhausted || isRavenous}
-                  onClick={() => handleAction('collect')}
+                  onClick={() => handleAction('move')}
                 >
-                  Collect
+                  Move
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
+                  disabled={actionsExhausted || isRavenous}
+                  onClick={() => handleAction('interact')}
+                >
+                  Interact
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
+                  disabled={actionsExhausted || isRavenous}
+                  onClick={() => handleAction('open_door')}
+                >
+                  Open Door
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
+                  disabled={actionsExhausted || isRavenous}
+                  onClick={() => handleAction('gain_trait')}
+                >
+                  Gain Trait
                 </Button>
               </div>
 
