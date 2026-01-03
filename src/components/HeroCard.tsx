@@ -13,10 +13,11 @@ interface HeroCardProps {
   hero: Hero
   onUpdateHero: (hero: Hero) => void
   onEditPower: (powerIndex: number) => void
+  isActiveTurn?: boolean
   className?: string
 }
 
-export function HeroCard({ hero, onUpdateHero, onEditPower, className }: HeroCardProps) {
+export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false, className }: HeroCardProps) {
   const [isEditingName, setIsEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(hero.name)
 
@@ -43,8 +44,11 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, className }: HeroCar
   return (
     <Card
       className={cn(
-        'relative p-6 bg-card border-2 border-border hover:border-accent/30 transition-all duration-200',
+        'relative p-6 bg-card border-2 transition-all duration-200',
         'shadow-lg hover:shadow-xl',
+        isActiveTurn 
+          ? 'border-accent-9 border-4 ring-2 ring-accent-9/20' 
+          : 'border-border hover:border-accent/30',
         className
       )}
     >
@@ -76,7 +80,10 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, className }: HeroCar
               />
             ) : (
               <div className="group flex items-center gap-2">
-                <h2 className="font-rajdhani font-bold text-2xl uppercase tracking-tight text-foreground">
+                <h2 className={cn(
+                  'font-rajdhani font-bold text-2xl uppercase tracking-tight',
+                  isActiveTurn ? 'text-accent-11' : 'text-foreground'
+                )}>
                   {hero.name}
                 </h2>
                 <Button

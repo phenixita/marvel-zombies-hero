@@ -12,6 +12,20 @@ export interface Hero {
   powers: Power[]
 }
 
+export interface Turn {
+  heroId: string
+  startTime: number
+}
+
+export interface Round {
+  number: number
+  turns: Turn[]
+  startTime: number
+  endTime?: number
+}
+
 export interface GameState {
   heroes: Hero[]
+  currentRound?: Round
+  currentTurn?: Turn
 }

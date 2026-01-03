@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { PowerEditDialog } from '@/components/PowerEditDialog'
 import { GameInitDialog } from '@/components/GameInitDialog'
+import { StartTurnDialog } from '@/components/StartTurnDialog'
 import { KeyboardShortcuts } from '@/components/KeyboardShortcuts'
 import { Header } from '@/components/Header'
 import { HeroGrid } from '@/components/HeroGrid'
-import { Hero, Power, GameState } from '@/lib/types'
+import { Hero, Power, GameState, Turn, Round } from '@/lib/types'
 import { Toaster, toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { usePersistentState } from '@/hooks/usePersistentState'
@@ -25,6 +26,7 @@ function App() {
 
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
   const [showInitDialog, setShowInitDialog] = useState(false)
+  const [showStartTurnDialog, setShowStartTurnDialog] = useState(false)
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -35,6 +37,10 @@ function App() {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
         setShowKeyboardHelp(true)
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 't') {
+        e.preventDefault()
+        setShowStartTurnDialog(true)
       }
     }
 
@@ -66,6 +72,7 @@ function App() {
 
   const handleUpdateHero = (updatedHero: Hero) => {
     setGameState((current) => ({
+      ...current,
       heroes: current?.heroes.map((h) => (h.id === updatedHero.id ? updatedHero : h)) || [],
     }))
   }
@@ -85,6 +92,7 @@ function App() {
     if (!editingPower) return
 
     setGameState((current) => ({
+      ...current,
       heroes: current?.heroes.map((hero) => {
         if (hero.id === editingPower.heroId) {
           const newPowers = [...hero.powers]
@@ -97,6 +105,62 @@ function App() {
 
     setEditingPower(null)
     toast.success('Power saved')
+  }
+
+  const handleStartTurn = (heroIndex: number) => {
+    const hero = gameState?.heroes[heroIndex]
+    if (!hero) return
+
+    const now = Date.now()
+    const newTurn: Turn = {
+      heroId: hero.id,
+      startTime: now,
+    }
+
+    setGameState((current) => {
+      const currentRound = current?.currentRound
+      
+      // Check if we need to start a new round
+      const shouldStartNewRound = !currentRound || 
+        currentRound.turns.length >= (current?.heroes.length || 0)
+
+      if (shouldStartNewRound) {
+        // Start a new round
+        const newRound: Round = {
+          number: (currentRound?.number || 0) + 1,
+          turns: [newTurn],
+          startTime: now,
+        }
+        
+        // Close previous round if it exists
+        if (currentRound) {
+          currentRound.endTime = now
+        }
+
+        return {
+          ...current,
+          heroes: current?.heroes || [],
+          currentRound: newRound,
+          currentTurn: newTurn,
+        }
+      } else {
+        // Add turn to existing round
+        const updatedRound: Round = {
+          ...currentRound,
+          turns: [...currentRound.turns, newTurn],
+        }
+
+        return {
+          ...current,
+          heroes: current?.heroes || [],
+          currentRound: updatedRound,
+          currentTurn: newTurn,
+        }
+      }
+    })
+
+    setShowStartTurnDialog(false)
+    toast.success(`Turn started for ${hero.name}`)
   }
 
 
@@ -127,6 +191,7 @@ function App() {
         <Header
           onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
           onNewGame={() => setShowInitDialog(true)}
+          onStartTurn={() => setShowStartTurnDialog(true)}
         />
       </header>
 
@@ -135,6 +200,7 @@ function App() {
           heroes={gameState?.heroes || []}
           onUpdateHero={handleUpdateHero}
           onEditPower={handleEditPower}
+          activeTurnHeroId={gameState?.currentTurn?.heroId}
         />
       </main>
 
@@ -152,6 +218,13 @@ function App() {
           onClose={() => setShowInitDialog(false)}
         />
       )}
+
+      <StartTurnDialog
+        open={showStartTurnDialog}
+        heroes={gameState?.heroes || []}
+        onSelectHero={handleStartTurn}
+        onClose={() => setShowStartTurnDialog(false)}
+      />
 
       <KeyboardShortcuts open={showKeyboardHelp} onClose={() => setShowKeyboardHelp(false)} />
     </div>

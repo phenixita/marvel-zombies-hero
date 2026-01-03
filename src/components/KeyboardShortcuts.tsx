@@ -12,6 +12,7 @@ interface KeyboardShortcutsProps {
 }
 
 const shortcuts = [
+  { key: 'Ctrl/Cmd + T', description: 'Start Turn' },
   { key: 'Ctrl/Cmd + N', description: 'New Game' },
   { key: 'Ctrl/Cmd + K', description: 'Show Keyboard Shortcuts' },
   { key: 'Tab', description: 'Navigate between elements' },
