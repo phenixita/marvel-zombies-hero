@@ -5,6 +5,7 @@ import { StartTurnDialog } from '@/components/StartTurnDialog'
 import { KeyboardShortcuts } from '@/components/KeyboardShortcuts'
 import { PhaseConfirmationDialog } from '@/components/PhaseConfirmationDialog'
 import { AttackDialog } from '@/components/AttackDialog'
+import { DevourDialog } from '@/components/DevourDialog'
 import { Header } from '@/components/Header'
 import { HeroGrid } from '@/components/HeroGrid'
 import { TurnTrackerSidebar } from '@/components/TurnTrackerSidebar'
@@ -32,6 +33,7 @@ function App() {
   const [showInitDialog, setShowInitDialog] = useState(false)
   const [showStartTurnDialog, setShowStartTurnDialog] = useState(false)
   const [attackingHeroId, setAttackingHeroId] = useState<string | null>(null)
+  const [devouringHeroId, setDevouringHeroId] = useState<string | null>(null)
   const [phaseConfirmation, setPhaseConfirmation] = useState<{
     open: boolean
     phase: 'START' | 'END' | 'GAME_OVER'
@@ -332,6 +334,25 @@ function App() {
     setAttackingHeroId(null)
   }
 
+  const handleDevour = (heroId: string) => {
+    setDevouringHeroId(heroId)
+  }
+
+  const handleDevourComplete = (heroId: string, hungerGained: number, wasSuccessful: boolean) => {
+    setGameState((current) => ({
+      ...current,
+      heroes: current?.heroes.map(h => {
+        if (h.id === heroId) {
+          const newHunger = wasSuccessful ? 0 : Math.min(4, h.hunger + hungerGained)
+          const newActions = Math.max(0, h.availableActions - 1)
+          return { ...h, hunger: newHunger, availableActions: newActions }
+        }
+        return h
+      }) || [],
+    }))
+    setDevouringHeroId(null)
+  }
+
 
   if (!gameState?.heroes || gameState.heroes.length === 0) {
     return (
@@ -378,6 +399,7 @@ function App() {
             currentTurnPhase={gameState?.currentTurn?.phase}
             onEndTurn={handleEndTurn}
             onAttack={handleAttack}
+            onDevour={handleDevour}
           />
         </main>
       </div>
@@ -425,6 +447,15 @@ function App() {
           hero={gameState?.heroes.find(h => h.id === attackingHeroId) || null}
           onComplete={handleAttackComplete}
           onClose={() => setAttackingHeroId(null)}
+        />
+      )}
+
+      {devouringHeroId && (
+        <DevourDialog
+          open={true}
+          hero={gameState?.heroes.find(h => h.id === devouringHeroId) || null}
+          onComplete={handleDevourComplete}
+          onClose={() => setDevouringHeroId(null)}
         />
       )}
     </div>

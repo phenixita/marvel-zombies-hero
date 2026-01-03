@@ -18,10 +18,11 @@ interface HeroCardProps {
   currentTurnPhase?: TurnPhase
   onEndTurn: () => void
   onAttack?: (heroId: string) => void
+  onDevour?: (heroId: string) => void
   className?: string
 }
 
-export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false, currentTurnPhase, onEndTurn, onAttack, className }: HeroCardProps) {
+export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false, currentTurnPhase, onEndTurn, onAttack, onDevour, className }: HeroCardProps) {
   const [isEditingName, setIsEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(hero.name)
   const [isEditingBaseAttack, setIsEditingBaseAttack] = useState(false)
@@ -66,12 +67,13 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
       return
     }
 
-    const updates: Partial<Hero> = {
-      availableActions: currentActions - 1
+    if (action === 'devour') {
+      onDevour?.(hero.id)
+      return
     }
 
-    if (action === 'devour') {
-      updates.hunger = 0
+    const updates: Partial<Hero> = {
+      availableActions: currentActions - 1
     }
 
     onUpdateHero({ ...hero, ...updates })
