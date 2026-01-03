@@ -41,6 +41,21 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
     onUpdateHero({ ...hero, powers: newPowers })
   }
 
+  const handleAction = (action: 'devour' | 'attack' | 'collect') => {
+    const currentActions = hero.availableActions ?? 0
+    if (currentActions <= 0) return
+
+    const updates: Partial<Hero> = {
+      availableActions: currentActions - 1
+    }
+
+    if (action === 'devour') {
+      updates.hunger = 0
+    }
+
+    onUpdateHero({ ...hero, ...updates })
+  }
+
   return (
     <Card
       className={cn(
@@ -103,6 +118,44 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
             maxHealth={5}
             onChange={handleHealthChange}
           />
+
+          {isActiveTurn && (
+            <div className="bg-accent/10 p-3 rounded-md border border-accent/20 space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="flex items-center justify-between text-sm font-medium text-accent-11">
+                <span className="uppercase tracking-wider text-xs">Actions Available</span>
+                <span className="font-rajdhani font-bold text-xl">{hero.availableActions ?? 0}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
+                  disabled={(hero.availableActions ?? 0) <= 0}
+                  onClick={() => handleAction('devour')}
+                >
+                  Devour
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
+                  disabled={(hero.availableActions ?? 0) <= 0 || hero.hunger >= 4}
+                  onClick={() => handleAction('attack')}
+                >
+                  Attack
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
+                  disabled={(hero.availableActions ?? 0) <= 0 || hero.hunger >= 4}
+                  onClick={() => handleAction('collect')}
+                >
+                  Collect
+                </Button>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3 pt-2">
             {Array.from({ length: 4 }).map((_, index) => (

@@ -56,6 +56,7 @@ function App() {
       health: 5,
       hunger: 0,
       powers: [],
+      availableActions: 3,
     }))
 
     setGameState({
@@ -120,6 +121,11 @@ function App() {
     setGameState((current) => {
       const currentRound = current?.currentRound
       
+      // Reset available actions for the active hero
+      const updatedHeroes = current?.heroes.map(h => 
+        h.id === hero.id ? { ...h, availableActions: 3 } : h
+      ) || []
+
       // Check if we need to start a new round
       const shouldStartNewRound = !currentRound || 
         currentRound.turns.length >= (current?.heroes.length || 0)
@@ -139,7 +145,7 @@ function App() {
 
         return {
           ...current,
-          heroes: current?.heroes || [],
+          heroes: updatedHeroes,
           currentRound: newRound,
           currentTurn: newTurn,
         }
@@ -152,7 +158,7 @@ function App() {
 
         return {
           ...current,
-          heroes: current?.heroes || [],
+          heroes: updatedHeroes,
           currentRound: updatedRound,
           currentTurn: newTurn,
         }

@@ -10,6 +10,7 @@ export interface Hero {
   health: number
   hunger: number
   powers: Power[]
+  availableActions: number
 }
 
 export interface Turn {
