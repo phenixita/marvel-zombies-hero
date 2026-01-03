@@ -10,6 +10,7 @@ export interface Hero {
   health: number
   hunger: number
   level: number
+  baseAttackValue: number
   powers: Power[]
   availableActions: number
 }

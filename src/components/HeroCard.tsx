@@ -17,18 +17,31 @@ interface HeroCardProps {
   isActiveTurn?: boolean
   currentTurnPhase?: TurnPhase
   onEndTurn: () => void
+  onAttack?: (heroId: string) => void
   className?: string
 }
 
-export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false, currentTurnPhase, onEndTurn, className }: HeroCardProps) {
+export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false, currentTurnPhase, onEndTurn, onAttack, className }: HeroCardProps) {
   const [isEditingName, setIsEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(hero.name)
+  const [isEditingBaseAttack, setIsEditingBaseAttack] = useState(false)
+  const [baseAttackInput, setBaseAttackInput] = useState(hero.baseAttackValue.toString())
 
   const handleNameSubmit = () => {
     if (nameInput.trim()) {
       onUpdateHero({ ...hero, name: nameInput.trim() })
     }
     setIsEditingName(false)
+  }
+
+  const handleBaseAttackSubmit = () => {
+    const value = parseInt(baseAttackInput)
+    if (!isNaN(value) && value >= 0) {
+      onUpdateHero({ ...hero, baseAttackValue: value })
+    } else {
+      setBaseAttackInput(hero.baseAttackValue.toString())
+    }
+    setIsEditingBaseAttack(false)
   }
 
   const handleHealthChange = (newHealth: number) => {
@@ -47,6 +60,11 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
   const handleAction = (action: 'devour' | 'attack' | 'collect') => {
     const currentActions = hero.availableActions ?? 0
     if (currentActions <= 0) return
+
+    if (action === 'attack') {
+      onAttack?.(hero.id)
+      return
+    }
 
     const updates: Partial<Hero> = {
       availableActions: currentActions - 1
@@ -135,9 +153,39 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
               </div>
             )}
             
-            <Badge className={cn('text-white border-0 text-xs', getLevelColor(hero.level))}>
-              Lvl {hero.level} - {getLevelCategory(hero.level)}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge className={cn('text-white border-0 text-xs', getLevelColor(hero.level))}>
+                Lvl {hero.level} - {getLevelCategory(hero.level)}
+              </Badge>
+              
+              {isEditingBaseAttack ? (
+                <Input
+                  value={baseAttackInput}
+                  onChange={(e) => setBaseAttackInput(e.target.value)}
+                  onBlur={handleBaseAttackSubmit}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleBaseAttackSubmit()
+                    if (e.key === 'Escape') {
+                      setBaseAttackInput(hero.baseAttackValue.toString())
+                      setIsEditingBaseAttack(false)
+                    }
+                  }}
+                  autoFocus
+                  type="number"
+                  min="0"
+                  className="w-16 h-6 px-2 py-0 text-xs"
+                />
+              ) : (
+                <button
+                  onClick={() => setIsEditingBaseAttack(true)}
+                  className="group/attack flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-muted hover:bg-muted/80 transition-colors"
+                >
+                  <span className="text-muted-foreground">ATK:</span>
+                  <span className="font-rajdhani font-bold">{hero.baseAttackValue}</span>
+                  <PencilSimple className="w-3 h-3 opacity-0 group-hover/attack:opacity-100 transition-opacity" />
+                </button>
+              )}
+            </div>
           </div>
 
           <HealthIndicator

@@ -8,9 +8,10 @@ interface HeroGridProps {
   activeTurnHeroId?: string
   currentTurnPhase?: TurnPhase
   onEndTurn: () => void
+  onAttack?: (heroId: string) => void
 }
 
-export function HeroGrid({ heroes, onUpdateHero, onEditPower, activeTurnHeroId, currentTurnPhase, onEndTurn }: HeroGridProps) {
+export function HeroGrid({ heroes, onUpdateHero, onEditPower, activeTurnHeroId, currentTurnPhase, onEndTurn, onAttack }: HeroGridProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {heroes.map((hero) => (
@@ -22,6 +23,7 @@ export function HeroGrid({ heroes, onUpdateHero, onEditPower, activeTurnHeroId, 
           isActiveTurn={hero.id === activeTurnHeroId}
           currentTurnPhase={currentTurnPhase}
           onEndTurn={onEndTurn}
+          onAttack={onAttack}
         />
       ))}
     </div>

@@ -4,6 +4,7 @@ import { GameInitDialog } from '@/components/GameInitDialog'
 import { StartTurnDialog } from '@/components/StartTurnDialog'
 import { KeyboardShortcuts } from '@/components/KeyboardShortcuts'
 import { PhaseConfirmationDialog } from '@/components/PhaseConfirmationDialog'
+import { AttackDialog } from '@/components/AttackDialog'
 import { Header } from '@/components/Header'
 import { HeroGrid } from '@/components/HeroGrid'
 import { TurnTrackerSidebar } from '@/components/TurnTrackerSidebar'
@@ -30,6 +31,7 @@ function App() {
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
   const [showInitDialog, setShowInitDialog] = useState(false)
   const [showStartTurnDialog, setShowStartTurnDialog] = useState(false)
+  const [attackingHeroId, setAttackingHeroId] = useState<string | null>(null)
   const [phaseConfirmation, setPhaseConfirmation] = useState<{
     open: boolean
     phase: 'START' | 'END' | 'GAME_OVER'
@@ -66,6 +68,7 @@ function App() {
       health: 5,
       hunger: 0,
       level: 0,
+      baseAttackValue: 2,
       powers: [],
       availableActions: 3,
     }))
@@ -309,6 +312,26 @@ function App() {
     }
   }
 
+  const handleAttack = (heroId: string) => {
+    setAttackingHeroId(heroId)
+  }
+
+  const handleAttackComplete = (heroId: string, hungerGained: number, attackSuccesses: number) => {
+    setGameState((current) => ({
+      ...current,
+      heroes: current?.heroes.map(h => {
+        if (h.id === heroId) {
+          const newHunger = Math.min(4, h.hunger + hungerGained)
+          const newLevel = h.level + attackSuccesses
+          const newActions = Math.max(0, h.availableActions - 1)
+          return { ...h, hunger: newHunger, level: newLevel, availableActions: newActions }
+        }
+        return h
+      }) || [],
+    }))
+    setAttackingHeroId(null)
+  }
+
 
   if (!gameState?.heroes || gameState.heroes.length === 0) {
     return (
@@ -354,6 +377,7 @@ function App() {
             activeTurnHeroId={gameState?.currentTurn?.heroId}
             currentTurnPhase={gameState?.currentTurn?.phase}
             onEndTurn={handleEndTurn}
+            onAttack={handleAttack}
           />
         </main>
       </div>
@@ -392,6 +416,15 @@ function App() {
           isAutomaticMode={gameState?.isAutomaticMode || false}
           onConfirm={phaseConfirmation.onConfirm}
           onClose={() => setPhaseConfirmation(null)}
+        />
+      )}
+
+      {attackingHeroId && (
+        <AttackDialog
+          open={true}
+          hero={gameState?.heroes.find(h => h.id === attackingHeroId) || null}
+          onComplete={handleAttackComplete}
+          onClose={() => setAttackingHeroId(null)}
         />
       )}
     </div>
