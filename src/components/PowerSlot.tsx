@@ -1,7 +1,7 @@
-import { Lightning, PencilSimple, Trash } from '@phosphor-icons/react'
-import { cn } from '@/lib/utils'
-import { Power } from '@/lib/types'
 import { Button } from '@/components/ui/button'
+import { Power } from "@/lib/Power"
+import { cn } from '@/lib/utils'
+import { Lightning, PencilSimple, Trash } from '@phosphor-icons/react'
 
 interface PowerSlotProps {
   power: Power | null

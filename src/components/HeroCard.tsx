@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Hero, TurnPhase } from '@/lib/types'
+import { Hero } from "@/lib/Hero"
+import { TurnPhase } from "@/lib/TurnPhase"
 import { cn } from '@/lib/utils'
 import { PencilSimple } from '@phosphor-icons/react'
 import { useState } from 'react'
@@ -27,6 +28,8 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
   const [nameInput, setNameInput] = useState(hero.name)
   const [isEditingBaseAttack, setIsEditingBaseAttack] = useState(false)
   const [baseAttackInput, setBaseAttackInput] = useState(hero.baseAttackValue.toString())
+  const [isEditingPrecision, setIsEditingPrecision] = useState(false)
+  const [precisionInput, setPrecisionInput] = useState(hero.precision.toString())
 
   const handleNameSubmit = () => {
     if (nameInput.trim()) {
@@ -43,6 +46,16 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
       setBaseAttackInput(hero.baseAttackValue.toString())
     }
     setIsEditingBaseAttack(false)
+  }
+
+  const handlePrecisionSubmit = () => {
+    const value = parseInt(precisionInput)
+    if (!isNaN(value) && value >= 0) {
+      onUpdateHero({ ...hero, precision: value })
+    } else {
+      setPrecisionInput(hero.precision.toString())
+    }
+    setIsEditingPrecision(false)
   }
 
   const handleHealthChange = (newHealth: number) => {
@@ -103,10 +116,10 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
   return (
     <Card
       className={cn(
-        'relative p-6 bg-card border-2 transition-all duration-200',
+        'relative p-2 bg-card border-2 transition-all duration-200',
         'shadow-lg hover:shadow-xl',
-        isActiveTurn 
-          ? 'border-accent-9 border-4 ring-2 ring-accent-9/20' 
+        isActiveTurn
+          ? 'border-accent-9 border-4 ring-2 ring-accent-9/20'
           : 'border-border hover:border-accent/30',
         isRavenous && 'border-destructive/80 animate-pulse',
         className
@@ -156,12 +169,12 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
                 </Button>
               </div>
             )}
-            
+
             <div className="flex items-center gap-2">
               <Badge className={cn('text-white border-0 text-xs', getLevelColor(hero.level))}>
                 Lvl {hero.level} - {getLevelCategory(hero.level)}
               </Badge>
-              
+
               {isEditingBaseAttack ? (
                 <Input
                   value={baseAttackInput}
@@ -184,12 +197,41 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
                   onClick={() => setIsEditingBaseAttack(true)}
                   className="group/attack flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-muted hover:bg-muted/80 transition-colors"
                 >
-                  <span className="text-muted-foreground">ATK:</span>
+                  <span className="text-muted-foreground">BASE ATTACK </span>
                   <span className="font-rajdhani font-bold">{hero.baseAttackValue}</span>
                   <PencilSimple className="w-3 h-3 opacity-0 group-hover/attack:opacity-100 transition-opacity" />
                 </button>
               )}
             </div>
+            {isEditingPrecision ? (
+              <Input
+                value={precisionInput}
+                onChange={(e) => setPrecisionInput(e.target.value)}
+                onBlur={handlePrecisionSubmit}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handlePrecisionSubmit()
+                  if (e.key === 'Escape') {
+                    setPrecisionInput(hero.precision.toString())
+                    setIsEditingPrecision(false)
+                  }
+                }}
+                autoFocus
+                type="number"
+                min="1"
+                defaultValue="3"
+                max="6"
+                className="w-16 h-6 px-2 py-0 text-xs"
+              />
+            ) : (
+              <button
+                onClick={() => setIsEditingPrecision(true)}
+                className="group/attack flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-muted hover:bg-muted/80 transition-colors"
+              >
+                <span className="text-muted-foreground">PRECISION </span>
+                <span className="font-rajdhani font-bold">{hero.precision}</span>
+                <PencilSimple className="w-3 h-3 opacity-0 group-hover/attack:opacity-100 transition-opacity" />
+              </button>
+            )}
           </div>
 
           <HealthIndicator
@@ -207,32 +249,14 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
                   actionsExhausted && "text-muted-foreground"
                 )}>{actionsRemaining}/3</span>
               </div>
-              
+
               {isRavenous && (
                 <div className="bg-destructive/20 px-2 py-1 rounded text-xs text-destructive font-medium text-center border border-destructive/30">
                   RAVENOUS - Only Devour allowed!
                 </div>
               )}
-              
-              <div className="grid grid-cols-3 gap-2">
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
-                  disabled={actionsExhausted}
-                  onClick={() => handleAction('devour')}
-                >
-                  Devour
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
-                  disabled={actionsExhausted || isRavenous}
-                  onClick={() => handleAction('attack')}
-                >
-                  Attack
-                </Button>
+
+              <div className="grid grid-cols-1 gap-2">
                 <Button
                   size="sm"
                   variant="secondary"
@@ -247,10 +271,20 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
                   variant="secondary"
                   className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
                   disabled={actionsExhausted || isRavenous}
-                  onClick={() => handleAction('interact')}
+                  onClick={() => handleAction('attack')}
                 >
-                  Interact
+                  Attack
                 </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
+                  disabled={actionsExhausted}
+                  onClick={() => handleAction('devour')}
+                >
+                  Devour
+                </Button>
+
                 <Button
                   size="sm"
                   variant="secondary"
@@ -269,6 +303,16 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
                 >
                   Gain Trait
                 </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
+                  disabled={actionsExhausted || isRavenous}
+                  onClick={() => handleAction('interact')}
+                >
+                  Interact
+                </Button>
+
               </div>
 
               <Button

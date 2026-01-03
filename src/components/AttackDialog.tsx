@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -7,9 +7,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Hero } from '@/lib/types'
-import { cn } from '@/lib/utils'
+import { Hero } from "@/lib/Hero"
+import { useEffect, useState } from 'react'
 
 interface AttackDialogProps {
   open: boolean
@@ -22,16 +21,16 @@ type AttackStep = 'DICE_COUNT' | 'HUNGER_RESULTS' | 'ATTACK_SUCCESSES' | 'COMPLE
 
 export function AttackDialog({ open, hero, onComplete, onClose }: AttackDialogProps) {
   const [step, setStep] = useState<AttackStep>('DICE_COUNT')
-  const [diceCount, setDiceCount] = useState('')
-  const [hungerResults, setHungerResults] = useState('')
-  const [attackSuccesses, setAttackSuccesses] = useState('')
+  const [diceCount, setDiceCount] = useState('0')
+  const [hungerResults, setHungerResults] = useState('0')
+  const [attackSuccesses, setAttackSuccesses] = useState('0')
 
   // Reset state when dialog opens
   useEffect(() => {
     if (open && hero) {
       const defaultDiceCount = hero.hunger + hero.baseAttackValue
       setDiceCount(defaultDiceCount.toString())
-      setHungerResults('')
+      setHungerResults('0')
       setAttackSuccesses('')
       setStep('DICE_COUNT')
     }
@@ -40,19 +39,19 @@ export function AttackDialog({ open, hero, onComplete, onClose }: AttackDialogPr
   const handleDiceCountSubmit = () => {
     const dice = parseInt(diceCount)
     if (isNaN(dice) || dice < 0) return
-    
+
     setTimeout(() => setStep('HUNGER_RESULTS'), 150)
   }
 
   const handleHungerResultsSubmit = () => {
     const hunger = parseInt(hungerResults)
     const dice = parseInt(diceCount)
-    
+
     // Validate: hunger results cannot exceed dice count
     if (isNaN(hunger) || hunger < 0 || hunger > dice) {
       return
     }
-    
+
     setTimeout(() => setStep('ATTACK_SUCCESSES'), 150)
   }
 
@@ -60,14 +59,14 @@ export function AttackDialog({ open, hero, onComplete, onClose }: AttackDialogPr
     const successes = parseInt(attackSuccesses)
     const dice = parseInt(diceCount)
     const hunger = parseInt(hungerResults)
-    
+
     // Validate: attack successes cannot exceed dice count
     if (isNaN(successes) || successes < 0 || successes > dice) {
       return
     }
-    
+
     setStep('COMPLETE')
-    
+
     // Complete the attack
     setTimeout(() => {
       if (hero) {
@@ -102,7 +101,7 @@ export function AttackDialog({ open, hero, onComplete, onClose }: AttackDialogPr
           </DialogTitle>
           <DialogDescription>
             {step === 'DICE_COUNT' && 'Enter the number of dice to roll'}
-            {step === 'HUNGER_RESULTS' && 'How many hunger symbols (⚡) appeared?'}
+            {step === 'HUNGER_RESULTS' && 'How many hunger symbols (👄) appeared?'}
             {step === 'ATTACK_SUCCESSES' && 'How many valid attack successes?'}
             {step === 'COMPLETE' && 'Attack complete!'}
           </DialogDescription>
@@ -163,7 +162,7 @@ export function AttackDialog({ open, hero, onComplete, onClose }: AttackDialogPr
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Hunger Symbols (⚡)</label>
+                <label className="text-sm font-medium">Hunger Symbols (👄)</label>
                 <Input
                   type="number"
                   min="0"
@@ -183,8 +182,8 @@ export function AttackDialog({ open, hero, onComplete, onClose }: AttackDialogPr
                 onClick={handleHungerResultsSubmit}
                 className="w-full font-rajdhani font-bold uppercase"
                 disabled={
-                  !hungerResults || 
-                  parseInt(hungerResults) < 0 || 
+                  !hungerResults ||
+                  parseInt(hungerResults) < 0 ||
                   parseInt(hungerResults) > totalDice
                 }
               >
@@ -208,7 +207,7 @@ export function AttackDialog({ open, hero, onComplete, onClose }: AttackDialogPr
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Valid Attack Successes</label>
+                <label className="text-sm font-medium">Valid Attack Successes (value bigger than {hero.precision})</label>
                 <Input
                   type="number"
                   min="0"
@@ -228,9 +227,9 @@ export function AttackDialog({ open, hero, onComplete, onClose }: AttackDialogPr
                 onClick={handleAttackSuccessesSubmit}
                 className="w-full font-rajdhani font-bold uppercase"
                 disabled={
-                  !attackSuccesses || 
-                  parseInt(attackSuccesses) < 0 || 
-                  parseInt(attackSuccesses) > totalDice
+                  !attackSuccesses ||
+                  parseInt(attackSuccesses) < 0 ||
+                  parseInt(attackSuccesses) > totalDice - hungerCount
                 }
               >
                 Complete Attack

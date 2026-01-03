@@ -1,15 +1,14 @@
-import { useEffect, useState } from 'react'
+import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Hero } from '@/lib/types'
-import { cn } from '@/lib/utils'
+import { Hero } from "@/lib/Hero"
+import { useEffect, useState } from 'react'
 
 interface DevourDialogProps {
   open: boolean

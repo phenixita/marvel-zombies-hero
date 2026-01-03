@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
 } from '@/components/ui/dialog'
-import { Hero } from '@/lib/types'
+import { Hero } from "@/lib/Hero"
 import { cn } from '@/lib/utils'
+import { useEffect, useState } from 'react'
 
 interface StartTurnDialogProps {
   open: boolean

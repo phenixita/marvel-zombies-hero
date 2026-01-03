@@ -9,9 +9,13 @@ import { PowerEditDialog } from '@/components/PowerEditDialog'
 import { StartTurnDialog } from '@/components/StartTurnDialog'
 import { TurnTrackerSidebar } from '@/components/TurnTrackerSidebar'
 import { usePersistentState } from '@/hooks/usePersistentState'
-import { GameState, Hero, Power, Round, Turn } from '@/lib/types'
 import { useEffect, useState } from 'react'
 import { Toaster, toast } from 'sonner'
+import { GameState } from "./lib/GameState"
+import { Hero } from "./lib/Hero"
+import { Power } from "./lib/Power"
+import { Round } from "./lib/Round"
+import { Turn } from "./lib/Turn"
 
 function App() {
   const [gameState, setGameState] = usePersistentState<GameState>(
@@ -70,6 +74,7 @@ function App() {
       hunger: 0,
       level: 0,
       baseAttackValue: 2,
+      precision: 3,
       powers: [],
       availableActions: 3,
     }))

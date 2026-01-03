@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -8,10 +8,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Power } from '@/lib/types'
+import { Textarea } from '@/components/ui/textarea'
+import { Power } from "@/lib/Power"
+import { useEffect, useState } from 'react'
 
 interface PowerEditDialogProps {
   open: boolean

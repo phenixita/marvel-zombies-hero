@@ -1,14 +1,14 @@
-import { useEffect } from 'react'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Hero } from '@/lib/types'
+import { Hero } from "@/lib/Hero"
+import { useEffect } from 'react'
 
 interface PhaseConfirmationDialogProps {
   open: boolean

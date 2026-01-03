@@ -1,10 +1,11 @@
-import { Hero, GameState } from '@/lib/types'
-import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Slider } from '@/components/ui/slider'
+import { Card } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Check, Circle, ArrowRight } from '@phosphor-icons/react'
-import { useState, useEffect } from 'react'
+import { Slider } from '@/components/ui/slider'
+import { GameState } from "@/lib/GameState"
+import { Hero } from "@/lib/Hero"
+import { ArrowRight, Check, Circle } from '@phosphor-icons/react'
+import { useEffect, useState } from 'react'
 
 interface TurnTrackerSidebarProps {
   gameState: GameState
