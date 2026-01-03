@@ -1,4 +1,6 @@
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { KeyboardIcon, Plus } from 'lucide-react'
 import { Play } from '@phosphor-icons/react'
 
@@ -6,9 +8,11 @@ interface HeaderProps {
     onShowKeyboardHelp: () => void
     onNewGame: () => void
     onStartTurn: () => void
+    isAutomaticMode: boolean
+    onToggleAutomaticMode: () => void
 }
 
-export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn }: HeaderProps) {
+export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomaticMode, onToggleAutomaticMode }: HeaderProps) {
     return (
             <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                 <div>
@@ -20,7 +24,7 @@ export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn }: HeaderPro
 
                 <div className="flex items-center gap-4">
                     {/* Action Panel */}
-                    <div className="flex items-center gap-2 border-l border-border pl-4">
+                    <div className="flex items-center gap-4 border-l border-border pl-4">
                         <Button
                             variant="default"
                             onClick={onStartTurn}
@@ -30,6 +34,16 @@ export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn }: HeaderPro
                             <Play className="w-4 h-4" weight="fill" />
                             Start Turn
                         </Button>
+                        <div className="flex items-center gap-2">
+                            <Switch
+                                id="auto-mode"
+                                checked={isAutomaticMode}
+                                onCheckedChange={onToggleAutomaticMode}
+                            />
+                            <Label htmlFor="auto-mode" className="text-xs cursor-pointer uppercase tracking-wider">
+                                Auto
+                            </Label>
+                        </div>
                     </div>
 
                     {/* Utility Buttons */}

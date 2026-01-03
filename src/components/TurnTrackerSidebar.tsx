@@ -134,6 +134,20 @@ export function TurnTrackerSidebar({ gameState, onUpdateHero }: TurnTrackerSideb
               </p>
             </div>
 
+            {/* Current Phase Indicator */}
+            {currentTurn?.phase && currentTurn.phase !== 'IDLE' && (
+              <div className="bg-accent/10 px-3 py-2 rounded-md border border-accent/30">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-0.5">
+                  Current Phase
+                </p>
+                <p className="font-rajdhani font-bold text-lg uppercase text-accent">
+                  {currentTurn.phase === 'START' && 'Starting Turn'}
+                  {currentTurn.phase === 'ACTIONS' && 'Actions Phase'}
+                  {currentTurn.phase === 'END' && 'Ending Turn'}
+                </p>
+              </div>
+            )}
+
             {/* Turn Checklist */}
             <div className="space-y-2">
               <h4 className="text-xs text-muted-foreground uppercase tracking-wider">

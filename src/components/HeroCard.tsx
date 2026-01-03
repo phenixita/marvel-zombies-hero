@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { HealthIndicator } from '@/components/HealthIndicator'
 import { HungerScale } from '@/components/HungerScale'
 import { PowerSlot } from '@/components/PowerSlot'
-import { Hero, Power } from '@/lib/types'
+import { Hero, Power, TurnPhase } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
 interface HeroCardProps {
@@ -15,10 +15,12 @@ interface HeroCardProps {
   onUpdateHero: (hero: Hero) => void
   onEditPower: (powerIndex: number) => void
   isActiveTurn?: boolean
+  currentTurnPhase?: TurnPhase
+  onEndTurn: () => void
   className?: string
 }
 
-export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false, className }: HeroCardProps) {
+export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false, currentTurnPhase, onEndTurn, className }: HeroCardProps) {
   const [isEditingName, setIsEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(hero.name)
 
@@ -71,6 +73,11 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
     return 'Red'
   }
 
+  const isRavenous = hero.hunger >= 4
+  const isInActionsPhase = isActiveTurn && currentTurnPhase === 'ACTIONS'
+  const actionsRemaining = hero.availableActions ?? 0
+  const actionsExhausted = actionsRemaining === 0
+
   return (
     <Card
       className={cn(
@@ -79,6 +86,7 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
         isActiveTurn 
           ? 'border-accent-9 border-4 ring-2 ring-accent-9/20' 
           : 'border-border hover:border-accent/30',
+        isRavenous && 'border-destructive/80 animate-pulse',
         className
       )}
     >
@@ -138,18 +146,28 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
             onChange={handleHealthChange}
           />
 
-          {isActiveTurn && (
+          {isInActionsPhase && (
             <div className="bg-accent/10 p-3 rounded-md border border-accent/20 space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
               <div className="flex items-center justify-between text-sm font-medium text-accent-11">
                 <span className="uppercase tracking-wider text-xs">Actions Available</span>
-                <span className="font-rajdhani font-bold text-xl">{hero.availableActions ?? 0}</span>
+                <span className={cn(
+                  "font-rajdhani font-bold text-xl",
+                  actionsExhausted && "text-muted-foreground"
+                )}>{actionsRemaining}/3</span>
               </div>
+              
+              {isRavenous && (
+                <div className="bg-destructive/20 px-2 py-1 rounded text-xs text-destructive font-medium text-center border border-destructive/30">
+                  RAVENOUS - Only Devour allowed!
+                </div>
+              )}
+              
               <div className="grid grid-cols-3 gap-2">
                 <Button
                   size="sm"
                   variant="secondary"
                   className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
-                  disabled={(hero.availableActions ?? 0) <= 0}
+                  disabled={actionsExhausted}
                   onClick={() => handleAction('devour')}
                 >
                   Devour
@@ -158,7 +176,7 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
                   size="sm"
                   variant="secondary"
                   className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
-                  disabled={(hero.availableActions ?? 0) <= 0 || hero.hunger >= 4}
+                  disabled={actionsExhausted || isRavenous}
                   onClick={() => handleAction('attack')}
                 >
                   Attack
@@ -167,12 +185,20 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
                   size="sm"
                   variant="secondary"
                   className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
-                  disabled={(hero.availableActions ?? 0) <= 0 || hero.hunger >= 4}
+                  disabled={actionsExhausted || isRavenous}
                   onClick={() => handleAction('collect')}
                 >
                   Collect
                 </Button>
               </div>
+
+              <Button
+                variant="default"
+                className="w-full mt-2 font-rajdhani font-bold uppercase"
+                onClick={onEndTurn}
+              >
+                End Turn
+              </Button>
             </div>
           )}
 

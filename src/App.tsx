@@ -3,6 +3,7 @@ import { PowerEditDialog } from '@/components/PowerEditDialog'
 import { GameInitDialog } from '@/components/GameInitDialog'
 import { StartTurnDialog } from '@/components/StartTurnDialog'
 import { KeyboardShortcuts } from '@/components/KeyboardShortcuts'
+import { PhaseConfirmationDialog } from '@/components/PhaseConfirmationDialog'
 import { Header } from '@/components/Header'
 import { HeroGrid } from '@/components/HeroGrid'
 import { TurnTrackerSidebar } from '@/components/TurnTrackerSidebar'
@@ -15,7 +16,8 @@ function App() {
   const [gameState, setGameState] = usePersistentState<GameState>(
     'marvel-zombies-game',
     {
-      heroes: []
+      heroes: [],
+      isAutomaticMode: false,
     }
   )
 
@@ -28,6 +30,13 @@ function App() {
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
   const [showInitDialog, setShowInitDialog] = useState(false)
   const [showStartTurnDialog, setShowStartTurnDialog] = useState(false)
+  const [phaseConfirmation, setPhaseConfirmation] = useState<{
+    open: boolean
+    phase: 'START' | 'END' | 'GAME_OVER'
+    message: string
+    details?: string[]
+    onConfirm: () => void
+  } | null>(null)
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -110,6 +119,13 @@ function App() {
     toast.success('Power saved')
   }
 
+  const handleToggleAutomaticMode = () => {
+    setGameState((current) => ({
+      ...current,
+      isAutomaticMode: !current?.isAutomaticMode,
+    }))
+  }
+
   const handleStartTurn = (heroIndex: number) => {
     const hero = gameState?.heroes[heroIndex]
     if (!hero) return
@@ -118,6 +134,8 @@ function App() {
     const newTurn: Turn = {
       heroId: hero.id,
       startTime: now,
+      phase: 'START',
+      actionsTaken: 0,
     }
 
     setGameState((current) => {
@@ -168,7 +186,127 @@ function App() {
     })
 
     setShowStartTurnDialog(false)
-    toast.success(`Turn started for ${hero.name}`)
+    
+    // Start the START phase (increment hunger)
+    startTurnPhase(hero)
+  }
+
+  const startTurnPhase = (hero: Hero) => {
+    // Increment hunger (max 4)
+    const newHunger = Math.min(4, hero.hunger + 1)
+    const hungerIncreased = newHunger !== hero.hunger
+
+    setGameState((current) => ({
+      ...current,
+      heroes: current?.heroes.map(h => 
+        h.id === hero.id ? { ...h, hunger: newHunger } : h
+      ) || [],
+    }))
+
+    // Show confirmation dialog
+    setPhaseConfirmation({
+      open: true,
+      phase: 'START',
+      message: hungerIncreased 
+        ? `Hunger increased to ${newHunger}` 
+        : `Hunger already at maximum (${newHunger})`,
+      details: [
+        'Turn phase: START',
+        hungerIncreased ? `Hunger: ${hero.hunger} → ${newHunger}` : `Hunger: ${newHunger} (max)`,
+      ],
+      onConfirm: () => {
+        setPhaseConfirmation(null)
+        enterActionsPhase()
+      },
+    })
+  }
+
+  const enterActionsPhase = () => {
+    setGameState((current) => ({
+      ...current,
+      currentTurn: current?.currentTurn ? {
+        ...current.currentTurn,
+        phase: 'ACTIONS',
+      } : undefined,
+    }))
+    
+    toast.success('Actions phase - Perform your 3 actions')
+  }
+
+  const handleEndTurn = () => {
+    const activeTurn = gameState?.currentTurn
+    if (!activeTurn) return
+
+    const hero = gameState?.heroes.find(h => h.id === activeTurn.heroId)
+    if (!hero) return
+
+    endTurnPhase(hero)
+  }
+
+  const endTurnPhase = (hero: Hero) => {
+    const details: string[] = ['Turn phase: END']
+    let newHealth = hero.health
+    let isGameOver = false
+
+    // Check if Ravenous (hunger = 4)
+    if (hero.hunger >= 4) {
+      newHealth = Math.max(0, hero.health - 1)
+      details.push(`Ravenous! Health reduced: ${hero.health} → ${newHealth}`)
+      
+      // Check for death
+      if (newHealth === 0) {
+        isGameOver = true
+        details.push(`${hero.name} has died!`)
+      }
+    } else {
+      details.push('Hunger < 4, no health penalty')
+    }
+
+    // Update hero health
+    setGameState((current) => ({
+      ...current,
+      heroes: current?.heroes.map(h => 
+        h.id === hero.id ? { ...h, health: newHealth } : h
+      ) || [],
+      currentTurn: current?.currentTurn ? {
+        ...current.currentTurn,
+        phase: 'END',
+      } : undefined,
+      gameOver: isGameOver,
+    }))
+
+    // Show confirmation dialog
+    if (isGameOver) {
+      setPhaseConfirmation({
+        open: true,
+        phase: 'GAME_OVER',
+        message: `${hero.name} has reached 0 health and died!`,
+        details: [
+          'The game is over.',
+          'Start a new game to continue playing.',
+        ],
+        onConfirm: () => {
+          setPhaseConfirmation(null)
+          setShowInitDialog(true)
+        },
+      })
+    } else {
+      setPhaseConfirmation({
+        open: true,
+        phase: 'END',
+        message: 'Turn complete',
+        details,
+        onConfirm: () => {
+          setPhaseConfirmation(null)
+          // Set turn to IDLE
+          setGameState((current) => ({
+            ...current,
+            currentTurn: undefined,
+          }))
+          toast.success(`${hero.name}'s turn ended`)
+        },
+      })
+    }
   }
 
 
@@ -200,6 +338,8 @@ function App() {
           onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
           onNewGame={() => setShowInitDialog(true)}
           onStartTurn={() => setShowStartTurnDialog(true)}
+          isAutomaticMode={gameState?.isAutomaticMode || false}
+          onToggleAutomaticMode={handleToggleAutomaticMode}
         />
       </header>
 
@@ -212,6 +352,8 @@ function App() {
             onUpdateHero={handleUpdateHero}
             onEditPower={handleEditPower}
             activeTurnHeroId={gameState?.currentTurn?.heroId}
+            currentTurnPhase={gameState?.currentTurn?.phase}
+            onEndTurn={handleEndTurn}
           />
         </main>
       </div>
@@ -239,6 +381,19 @@ function App() {
       />
 
       <KeyboardShortcuts open={showKeyboardHelp} onClose={() => setShowKeyboardHelp(false)} />
+
+      {phaseConfirmation && (
+        <PhaseConfirmationDialog
+          open={phaseConfirmation.open}
+          phase={phaseConfirmation.phase}
+          hero={gameState?.heroes.find(h => h.id === gameState?.currentTurn?.heroId) || null}
+          message={phaseConfirmation.message}
+          details={phaseConfirmation.details}
+          isAutomaticMode={gameState?.isAutomaticMode || false}
+          onConfirm={phaseConfirmation.onConfirm}
+          onClose={() => setPhaseConfirmation(null)}
+        />
+      )}
     </div>
   )
 }

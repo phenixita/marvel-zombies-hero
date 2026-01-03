@@ -1,4 +1,4 @@
-import { Hero } from '@/lib/types'
+import { Hero, TurnPhase } from '@/lib/types'
 import { HeroCard } from '@/components/HeroCard'
 
 interface HeroGridProps {
@@ -6,9 +6,11 @@ interface HeroGridProps {
   onUpdateHero: (hero: Hero) => void
   onEditPower: (heroId: string, powerIndex: number) => void
   activeTurnHeroId?: string
+  currentTurnPhase?: TurnPhase
+  onEndTurn: () => void
 }
 
-export function HeroGrid({ heroes, onUpdateHero, onEditPower, activeTurnHeroId }: HeroGridProps) {
+export function HeroGrid({ heroes, onUpdateHero, onEditPower, activeTurnHeroId, currentTurnPhase, onEndTurn }: HeroGridProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {heroes.map((hero) => (
@@ -18,6 +20,8 @@ export function HeroGrid({ heroes, onUpdateHero, onEditPower, activeTurnHeroId }
           onUpdateHero={onUpdateHero}
           onEditPower={(powerIndex) => onEditPower(hero.id, powerIndex)}
           isActiveTurn={hero.id === activeTurnHeroId}
+          currentTurnPhase={currentTurnPhase}
+          onEndTurn={onEndTurn}
         />
       ))}
     </div>
