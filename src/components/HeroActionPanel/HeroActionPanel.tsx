@@ -4,7 +4,7 @@ import { Hero } from "@/lib/Hero"
 import { getMaxActions, isRavenous } from '@/lib/heroUtils'
 import { cn } from '@/lib/utils'
 import { Stop } from '@phosphor-icons/react'
-import { actionButtonClassName } from './styles'
+import { actionButtonClassName, actionsBoxClassName, actionsCountBaseClassName, buttonsGridClassName, containerClassName, endTurnButtonClassName, headerClassName, heroNameClassName, infoClassName, layoutClassName, ravenousClassName, separatorClassName, smallLabelClassName } from './styles'
 
 interface HeroActionPanelProps {
   hero: Hero | undefined
@@ -47,29 +47,29 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
 
   return (
     <div className={cn(
-      "bg-card/95 backdrop-blur-sm border-t-2 border-accent/20 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.3)] animate-in slide-in-from-bottom-full duration-300",
+      containerClassName,
       className
-    )}>
-      <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-4">
-        <div className="flex items-center gap-4 flex-shrink-0">
-          <div className="flex flex-col">
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold"> {hero ? "Active Hero" : "Waiting..."}</span>
-            <span className="font-rajdhani font-bold text-xl text-accent-11 uppercase">{hero?.name}</span>
-            {ravenous && (<span className="text-xs text-red-500 font-bold mt-1 uppercase">Ravenous!</span>)}
+    )}> 
+      <div className={layoutClassName}>
+        <div className={headerClassName}>
+          <div className={infoClassName}>
+            <span className={smallLabelClassName}> {hero ? "Active Hero" : "Waiting..."}</span>
+            <span className={heroNameClassName}>{hero?.name}</span>
+            {ravenous && (<span className={ravenousClassName}>Ravenous!</span>)}
           </div>
 
-          <div className="h-10 w-[2px] bg-border hidden md:block" />
+          <div className={separatorClassName} />
 
-          <div className="flex flex-col items-center">
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Actions</span>
+          <div className={actionsBoxClassName}>
+            <span className={smallLabelClassName}>Actions</span>
             <span className={cn(
-              "font-rajdhani font-bold text-2xl",
+              actionsCountBaseClassName,
               actionsExhausted ? "text-muted-foreground" : "text-accent-11"
             )}>{actionsRemaining}/{totalActions}</span>
           </div>
         </div>
 
-        <div className="flex-1 grid grid-cols-3 sm:grid-cols-6 gap-2 w-full">
+        <div className={buttonsGridClassName}>
           <Button
             size="sm"
             variant="secondary"
@@ -128,7 +128,7 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
 
         <Button
           variant="default"
-          className="w-full md:w-32 h-10 font-rajdhani font-bold uppercase"
+          className={endTurnButtonClassName}
           onClick={onEndTurn}
           disabled={!hero}
         >
