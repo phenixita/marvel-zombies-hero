@@ -78,7 +78,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
   return (
     <Card
       className={cn(
-        'relative border-2 transition-all duration-200',
+        'relative border-2 transition-all duration-200 flex flex-col p-0 gap-0 overflow-hidden',
         'shadow-lg hover:shadow-xl',
         isActiveTurn
           ? 'border-accent-9 border-4 ring-2 ring-accent-9/20'
@@ -86,7 +86,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
         className
       )}
     >
-      <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-6 p-2">
+      <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-6 p-4 flex-1">
         {/* Column 1: Hunger Scale (spans 3 rows) */}
         <div className={cn(
           "row-span-3 flex flex-col items-center justify-center",
@@ -157,86 +157,88 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
           />
         ))}
 
-        {/* Row 3, Column 2: EXP */}
-        <div>
-          {levelEdit.isEditing ? (
-            <Input
-              value={levelEdit.inputValue}
-              onChange={(e) => levelEdit.setInputValue(e.target.value)}
-              onBlur={levelEdit.saveEdit}
-              onKeyDown={levelEdit.handleKeyDown}
-              autoFocus
-              type="number"
-              min="0"
-              className="w-20 h-8 px-2 py-0 text-sm"
-            />
-          ) : (
-            <button
-              onClick={levelEdit.startEdit}
-              className={cn(
-                'group/level flex items-center gap-2 px-3 py-1 rounded font-medium transition-colors text-sm text-white border-0 cursor-pointer',
-                getLevelColor(hero.level),
-                'hover:brightness-110'
-              )}
-            >
-              <span className="uppercase text-[10px] tracking-wider opacity-90">EXP</span>
-              <span className="font-rajdhani font-bold text-lg">{hero.level}</span>
-              <span className="text-[10px] opacity-80">- {getLevelCategory(hero.level)}</span>
-              <PencilSimple className="w-3 h-3 opacity-50 group-hover/level:opacity-100 transition-opacity" />
-            </button>
-          )}
-        </div>
+        {/* Row 3, Columns 2-4: Stats (Base Attack & Precision) */}
+        <div className="col-span-3 flex items-center justify-start gap-8 pl-2">
+          {/* Base Attack */}
+          <div>
+            {baseAttackEdit.isEditing ? (
+              <Input
+                value={baseAttackEdit.inputValue}
+                onChange={(e) => baseAttackEdit.setInputValue(e.target.value)}
+                onBlur={baseAttackEdit.saveEdit}
+                onKeyDown={baseAttackEdit.handleKeyDown}
+                autoFocus
+                type="number"
+                min="0"
+                className="w-16 h-8 px-2 py-0 text-sm"
+              />
+            ) : (
+              <button
+                onClick={baseAttackEdit.startEdit}
+                className="group/attack flex items-center gap-2 px-3 py-1.5 rounded font-medium bg-muted hover:bg-muted/80 transition-colors text-sm"
+              >
+                <span className="text-muted-foreground uppercase text-[10px] tracking-wider">Base Attack</span>
+                <span className="font-rajdhani font-bold text-lg">{hero.baseAttackValue}</span>
+                <PencilSimple className="w-3 h-3 opacity-50 group-hover/attack:opacity-100 transition-opacity" />
+              </button>
+            )}
+          </div>
 
-        {/* Row 3, Column 3: Base Attack */}
-        <div>
-          {baseAttackEdit.isEditing ? (
-            <Input
-              value={baseAttackEdit.inputValue}
-              onChange={(e) => baseAttackEdit.setInputValue(e.target.value)}
-              onBlur={baseAttackEdit.saveEdit}
-              onKeyDown={baseAttackEdit.handleKeyDown}
-              autoFocus
-              type="number"
-              min="0"
-              className="w-16 h-8 px-2 py-0 text-sm"
-            />
-          ) : (
-            <button
-              onClick={baseAttackEdit.startEdit}
-              className="group/attack flex items-center gap-2 px-3 py-1.5 rounded font-medium bg-muted hover:bg-muted/80 transition-colors text-sm"
-            >
-              <span className="text-muted-foreground uppercase text-[10px] tracking-wider">Base Attack</span>
-              <span className="font-rajdhani font-bold text-lg">{hero.baseAttackValue}</span>
-              <PencilSimple className="w-3 h-3 opacity-50 group-hover/attack:opacity-100 transition-opacity" />
-            </button>
-          )}
+          {/* Precision */}
+          <div>
+            {precisionEdit.isEditing ? (
+              <Input
+                value={precisionEdit.inputValue}
+                onChange={(e) => precisionEdit.setInputValue(e.target.value)}
+                onBlur={precisionEdit.saveEdit}
+                onKeyDown={precisionEdit.handleKeyDown}
+                autoFocus
+                type="number"
+                min="1"
+                max="6"
+                className="w-16 h-8 px-2 py-0"
+              />
+            ) : (
+              <button
+                onClick={precisionEdit.startEdit}
+                className="group/precision flex items-center gap-2 px-3 py-1.5 rounded font-medium bg-muted hover:bg-muted/80 transition-colors text-sm"
+              >
+                <span className="text-muted-foreground uppercase text-[10px] tracking-wider">Precision</span>
+                <span className="font-rajdhani font-bold text-lg">{hero.precision}+</span>
+                <PencilSimple className="w-3 h-3 opacity-50 group-hover/precision:opacity-100 transition-opacity" />
+              </button>
+            )}
+          </div>
         </div>
+      </div>
 
-        {/* Row 3, Column 4: Precision */}
-        <div>
-          {precisionEdit.isEditing ? (
-            <Input
-              value={precisionEdit.inputValue}
-              onChange={(e) => precisionEdit.setInputValue(e.target.value)}
-              onBlur={precisionEdit.saveEdit}
-              onKeyDown={precisionEdit.handleKeyDown}
-              autoFocus
-              type="number"
-              min="1"
-              max="6"
-              className="w-16 h-8 px-2 py-0"
-            />
-          ) : (
-            <button
-              onClick={precisionEdit.startEdit}
-              className="group/precision flex items-center gap-2 px-3 py-1.5 rounded font-medium bg-muted hover:bg-muted/80 transition-colors text-sm"
-            >
-              <span className="text-muted-foreground uppercase text-[10px] tracking-wider">Precision</span>
-              <span className="font-rajdhani font-bold text-lg">{hero.precision}+</span>
-              <PencilSimple className="w-3 h-3 opacity-50 group-hover/precision:opacity-100 transition-opacity" />
-            </button>
-          )}
-        </div>
+      {/* Footer: EXP Bar */}
+      <div 
+        className={cn(
+          "w-full py-1.5 flex items-center justify-center gap-3 cursor-pointer transition-colors hover:brightness-110 mt-auto",
+          getLevelColor(hero.level)
+        )}
+        onClick={levelEdit.startEdit}
+      >
+        {levelEdit.isEditing ? (
+          <Input
+            value={levelEdit.inputValue}
+            onChange={(e) => levelEdit.setInputValue(e.target.value)}
+            onBlur={levelEdit.saveEdit}
+            onKeyDown={levelEdit.handleKeyDown}
+            autoFocus
+            type="number"
+            min="0"
+            className="w-24 h-8 px-2 py-0 text-sm bg-white/90 text-black border-none text-center font-bold"
+          />
+        ) : (
+          <>
+            <span className="uppercase text-[10px] font-bold tracking-widest text-white/90">EXP</span>
+            <span className="font-rajdhani font-bold text-2xl text-white leading-none">{hero.level}</span>
+            <span className="text-[10px] font-medium text-white/90 uppercase tracking-wide opacity-90">- {getLevelCategory(hero.level)}</span>
+            <PencilSimple className="w-3.5 h-3.5 text-white/80" />
+          </>
+        )}
       </div>
     </Card>
   )
