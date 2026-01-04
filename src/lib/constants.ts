@@ -11,7 +11,7 @@ export const MAX_HUNGER = 4
 // Hero level thresholds and colors
 export const LEVEL_THRESHOLDS = {
   BLUE: { max: 6, color: 'bg-blue-500', category: 'Blue' },
-  YELLOW: { max: 21, color: 'bg-yellow-500', category: 'Yellow' },
+  YELLOW: { max: 18, color: 'bg-yellow-500', category: 'Yellow' },
   ORANGE: { max: 42, color: 'bg-orange-500', category: 'Orange' },
   RED: { max: Infinity, color: 'bg-red-500', category: 'Red' },
 } as const
