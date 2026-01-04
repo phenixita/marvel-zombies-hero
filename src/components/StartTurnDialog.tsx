@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react'
 interface StartTurnDialogProps {
   open: boolean
   heroes: Hero[]
-  onSelectHero: (heroIndex: number) => void
+  onSelectHero: (heroId: string) => void
   onClose: () => void
 }
 
@@ -41,13 +41,13 @@ export function StartTurnDialog({ open, heroes, onSelectHero, onClose }: StartTu
       // Valid number pressed - auto-confirm
       setSelectedNumber(digit)
       setTimeout(() => {
-        onSelectHero(digit - 1) // Convert to 0-based index
+        onSelectHero(heroes[digit - 1].id) // Use hero ID from the filtered list
       }, 150) // Brief delay for visual feedback
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [open, heroes.length, onSelectHero, onClose])
+  }, [open, heroes, onSelectHero, onClose])
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -57,7 +57,10 @@ export function StartTurnDialog({ open, heroes, onSelectHero, onClose }: StartTu
             Start Turn
           </DialogTitle>
           <DialogDescription>
-            Press a number (1-{heroes.length}) to select which hero's turn it is
+            {heroes.length === 1 
+              ? `Press 1 to start ${heroes[0].name}'s turn`
+              : `Press a number (1-${heroes.length}) to select which hero's turn it is`
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -71,7 +74,7 @@ export function StartTurnDialog({ open, heroes, onSelectHero, onClose }: StartTu
                 key={hero.id}
                 onClick={() => {
                   setSelectedNumber(heroNumber)
-                  setTimeout(() => onSelectHero(index), 150)
+                  setTimeout(() => onSelectHero(hero.id), 150)
                 }}
                 className={cn(
                   'w-full p-4 rounded-lg border-2 transition-all duration-150',

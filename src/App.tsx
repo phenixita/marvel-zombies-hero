@@ -57,13 +57,13 @@ function App() {
       }
       if ((e.metaKey || e.ctrlKey) && e.key === 't') {
         e.preventDefault()
-        setShowStartTurnDialog(true)
+        triggerStartTurn()
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  }, [gameState?.currentTurn, gameState?.heroes, gameState?.currentRound])
 
 
   const handleStartNewGame = (heroCount: number) => {
@@ -135,8 +135,30 @@ function App() {
     }))
   }
 
-  const handleStartTurn = (heroIndex: number) => {
-    const hero = gameState?.heroes[heroIndex]
+  const triggerStartTurn = () => {
+    if (gameState?.currentTurn) {
+      toast.error('A turn is already in progress')
+      return
+    }
+
+    const heroes = gameState?.heroes || []
+    const currentRound = gameState?.currentRound
+    
+    // If no round or all heroes played, all are available (new round)
+    const playedHeroIds = currentRound?.turns.map(t => t.heroId) || []
+    const availableHeroes = heroes.filter(h => !playedHeroIds.includes(h.id))
+    
+    const heroesToSelectFrom = availableHeroes.length === 0 ? heroes : availableHeroes
+
+    if (heroesToSelectFrom.length === 1) {
+      handleStartTurn(heroesToSelectFrom[0].id)
+    } else {
+      setShowStartTurnDialog(true)
+    }
+  }
+
+  const handleStartTurn = (heroId: string) => {
+    const hero = gameState?.heroes.find(h => h.id === heroId)
     if (!hero) return
 
     const now = Date.now()
@@ -322,13 +344,13 @@ function App() {
     setAttackingHeroId(heroId)
   }
 
-  const handleAttackComplete = (heroId: string, hungerGained: number, attackSuccesses: number) => {
+  const handleAttackComplete = (heroId: string, hungerGained: number, enemiesDefeated: number) => {
     setGameState((current) => ({
       ...current,
       heroes: current?.heroes.map(h => {
         if (h.id === heroId) {
           const newHunger = Math.min(4, h.hunger + hungerGained)
-          const newLevel = h.level + attackSuccesses
+          const newLevel = h.level + enemiesDefeated
           const newActions = Math.max(0, h.availableActions - 1)
           return { ...h, hunger: newHunger, level: newLevel, availableActions: newActions }
         }
@@ -385,7 +407,7 @@ function App() {
         <Header
           onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
           onNewGame={() => setShowInitDialog(true)}
-          onStartTurn={() => setShowStartTurnDialog(true)}
+          onStartTurn={triggerStartTurn}
           isAutomaticMode={gameState?.isAutomaticMode || false}
           onToggleAutomaticMode={handleToggleAutomaticMode}
         />
@@ -425,7 +447,11 @@ function App() {
 
       <StartTurnDialog
         open={showStartTurnDialog}
-        heroes={gameState?.heroes || []}
+        heroes={
+          (gameState?.currentRound?.turns.length || 0) >= (gameState?.heroes.length || 0)
+            ? (gameState?.heroes || [])
+            : (gameState?.heroes || []).filter(h => !gameState?.currentRound?.turns.some(t => t.heroId === h.id))
+        }
         onSelectHero={handleStartTurn}
         onClose={() => setShowStartTurnDialog(false)}
       />
