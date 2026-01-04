@@ -7,15 +7,24 @@ import { KeyboardShortcuts } from '@/components/KeyboardShortcuts'
 import { PhaseConfirmationDialog } from '@/components/PhaseConfirmationDialog'
 import { StartTurnDialog } from '@/components/StartTurnDialog'
 import { TurnTrackerSidebar } from '@/components/TurnTrackerSidebar'
+import { useGameDialogs } from '@/hooks/useGameDialogs'
 import { usePersistentState } from '@/hooks/usePersistentState'
-import { useEffect, useState } from 'react'
 import { Toaster, toast } from 'sonner'
 import { TraitEditDialog } from './components/TraitEditDialog'
 import { GameState } from "./lib/GameState"
 import { Hero } from "./lib/Hero"
-import { Round } from "./lib/Round"
 import { Trait } from "./lib/Trait"
-import { Turn } from "./lib/Turn"
+import {
+  consumeAction,
+  createRound,
+  createTurn,
+  getAvailableHeroes,
+  processEndPhase,
+  processStartPhase,
+  resetHeroActions,
+  shouldStartNewRound
+} from './lib/gameLogic'
+import { clampHunger, createHero } from './lib/heroUtils'
 
 function App() {
   const [gameState, setGameState] = usePersistentState<GameState>(
@@ -26,69 +35,26 @@ function App() {
     }
   )
 
-  const [editingTrait, setEditingTrait] = useState<{
-    heroId: string
-    traitIndex: number
-    trait: Trait | null
-  } | null>(null)
+  // Use custom hooks for dialog management
+  const dialogs = useGameDialogs()
 
-  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
-  const [showInitDialog, setShowInitDialog] = useState(false)
-  const [showStartTurnDialog, setShowStartTurnDialog] = useState(false)
-  const [attackingHeroId, setAttackingHeroId] = useState<string | null>(null)
-  const [devouringHeroId, setDevouringHeroId] = useState<string | null>(null)
-  const [phaseConfirmation, setPhaseConfirmation] = useState<{
-    open: boolean
-    phase: 'START' | 'END' | 'GAME_OVER'
-    message: string
-    details?: string[]
-    onConfirm: () => void
-  } | null>(null)
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
-        e.preventDefault()
-        setShowInitDialog(true)
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault()
-        setShowKeyboardHelp(true)
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === 't') {
-        e.preventDefault()
-        triggerStartTurn()
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [gameState?.currentTurn, gameState?.heroes, gameState?.currentRound])
-
+ 
 
   const handleStartNewGame = (heroCount: number) => {
-    const newHeroes: Hero[] = Array.from({ length: heroCount }).map((_, index) => ({
-      id: crypto.randomUUID(),
-      name: `Hero ${index + 1}`,
-      health: 5,
-      hunger: 0,
-      level: 0,
-      baseAttackValue: 2,
-      precision: 3,
-      traits: [],
-      availableActions: 3,
-    }))
+    const newHeroes: Hero[] = Array.from({ length: heroCount }).map((_, index) => 
+      createHero(`Hero ${index + 1}`)
+    )
 
     setGameState({
       heroes: newHeroes,
     })
 
-    setShowInitDialog(false)
+    dialogs.closeInitDialog()
     toast.success(`Game initialized with ${heroCount} hero${heroCount > 1 ? 'es' : ''}`)
   }
 
   const handleContinueGame = () => {
-    setShowInitDialog(false)
+    dialogs.closeInitDialog()
   }
 
   const handleUpdateHero = (updatedHero: Hero) => {
@@ -102,29 +68,25 @@ function App() {
     const hero = gameState?.heroes.find((h) => h.id === heroId)
     if (!hero) return
 
-    setEditingTrait({
-      heroId,
-      traitIndex: traitIndex,
-      trait: hero.traits[traitIndex] || null,
-    })
+    dialogs.openTraitEdit(heroId, traitIndex, hero.traits[traitIndex] || null)
   }
 
   const handleSaveTrait = (trait: Trait) => {
-    if (!editingTrait) return
+    if (!dialogs.editingTrait) return
 
     setGameState((current) => ({
       ...current,
       heroes: current?.heroes.map((hero) => {
-        if (hero.id === editingTrait.heroId) {
+        if (hero.id === dialogs.editingTrait!.heroId) {
           const newTraits = [...hero.traits]
-          newTraits[editingTrait.traitIndex] = trait
+          newTraits[dialogs.editingTrait!.traitIndex] = trait
           return { ...hero, traits: newTraits }
         }
         return hero
       }) || [],
     }))
 
-    setEditingTrait(null)
+    dialogs.closeTraitEdit()
     toast.success('Trait saved')
   }
 
@@ -142,18 +104,12 @@ function App() {
     }
 
     const heroes = gameState?.heroes || []
-    const currentRound = gameState?.currentRound
-    
-    // If no round or all heroes played, all are available (new round)
-    const playedHeroIds = currentRound?.turns.map(t => t.heroId) || []
-    const availableHeroes = heroes.filter(h => !playedHeroIds.includes(h.id))
-    
-    const heroesToSelectFrom = availableHeroes.length === 0 ? heroes : availableHeroes
+    const availableHeroes = getAvailableHeroes(heroes, gameState?.currentRound)
 
-    if (heroesToSelectFrom.length === 1) {
-      handleStartTurn(heroesToSelectFrom[0].id)
+    if (availableHeroes.length === 1) {
+      handleStartTurn(availableHeroes[0].id)
     } else {
-      setShowStartTurnDialog(true)
+      dialogs.openStartTurnDialog()
     }
   }
 
@@ -161,38 +117,20 @@ function App() {
     const hero = gameState?.heroes.find(h => h.id === heroId)
     if (!hero) return
 
-    const now = Date.now()
-    const newTurn: Turn = {
-      heroId: hero.id,
-      startTime: now,
-      phase: 'START',
-      actionsTaken: 0,
-    }
+    const newTurn = createTurn(heroId)
 
     setGameState((current) => {
-      const currentRound = current?.currentRound
+      const totalHeroes = current?.heroes.length || 0
+      const needsNewRound = shouldStartNewRound(current?.currentRound, totalHeroes)
       
-      // Reset available actions for the active hero (4 if level >= 7, else 3)
+      // Reset available actions for the active hero
       const updatedHeroes = current?.heroes.map(h => 
-        h.id === hero.id ? { ...h, availableActions: h.level >= 7 ? 4 : 3 } : h
+        h.id === hero.id ? resetHeroActions(h) : h
       ) || []
 
-      // Check if we need to start a new round
-      const shouldStartNewRound = !currentRound || 
-        currentRound.turns.length >= (current?.heroes.length || 0)
-
-      if (shouldStartNewRound) {
+      if (needsNewRound) {
         // Start a new round
-        const newRound: Round = {
-          number: (currentRound?.number || 0) + 1,
-          turns: [newTurn],
-          startTime: now,
-        }
-        
-        // Close previous round if it exists
-        if (currentRound) {
-          currentRound.endTime = now
-        }
+        const newRound = createRound(current?.currentRound, newTurn)
 
         return {
           ...current,
@@ -202,9 +140,9 @@ function App() {
         }
       } else {
         // Add turn to existing round
-        const updatedRound: Round = {
-          ...currentRound,
-          turns: [...currentRound.turns, newTurn],
+        const updatedRound = {
+          ...current!.currentRound!,
+          turns: [...current!.currentRound!.turns, newTurn],
         }
 
         return {
@@ -216,16 +154,14 @@ function App() {
       }
     })
 
-    setShowStartTurnDialog(false)
+    dialogs.closeStartTurnDialog()
     
     // Start the START phase (increment hunger)
     startTurnPhase(hero)
   }
 
   const startTurnPhase = (hero: Hero) => {
-    // Increment hunger (max 4)
-    const newHunger = Math.min(4, hero.hunger + 1)
-    const hungerIncreased = newHunger !== hero.hunger
+    const { newHunger, hungerIncreased } = processStartPhase(hero)
 
     setGameState((current) => ({
       ...current,
@@ -235,7 +171,7 @@ function App() {
     }))
 
     // Show confirmation dialog
-    setPhaseConfirmation({
+    dialogs.setPhaseConfirmation({
       open: true,
       phase: 'START',
       message: hungerIncreased 
@@ -246,7 +182,7 @@ function App() {
         hungerIncreased ? `Hunger: ${hero.hunger} → ${newHunger}` : `Hunger: ${newHunger} (max)`,
       ],
       onConfirm: () => {
-        setPhaseConfirmation(null)
+        dialogs.closePhaseConfirmation()
         enterActionsPhase()
       },
     })
@@ -279,18 +215,14 @@ function App() {
   }
 
   const endTurnPhase = (hero: Hero) => {
+    const { newHealth, isGameOver, wasRavenous } = processEndPhase(hero)
+    
     const details: string[] = ['Turn phase: END']
-    let newHealth = hero.health
-    let isGameOver = false
-
-    // Check if Ravenous (hunger = 4)
-    if (hero.hunger >= 4) {
-      newHealth = Math.max(0, hero.health - 1)
+    
+    if (wasRavenous) {
       details.push(`Ravenous! Health reduced: ${hero.health} → ${newHealth}`)
       
-      // Check for death
-      if (newHealth === 0) {
-        isGameOver = true
+      if (isGameOver) {
         details.push(`${hero.name} has died!`)
       }
     } else {
@@ -312,7 +244,7 @@ function App() {
 
     // Show confirmation dialog
     if (isGameOver) {
-      setPhaseConfirmation({
+      dialogs.setPhaseConfirmation({
         open: true,
         phase: 'GAME_OVER',
         message: `${hero.name} has reached 0 health and died!`,
@@ -321,18 +253,18 @@ function App() {
           'Start a new game to continue playing.',
         ],
         onConfirm: () => {
-          setPhaseConfirmation(null)
-          setShowInitDialog(true)
+          dialogs.closePhaseConfirmation()
+          dialogs.openInitDialog()
         },
       })
     } else {
-      setPhaseConfirmation({
+      dialogs.setPhaseConfirmation({
         open: true,
         phase: 'END',
         message: 'Turn complete',
         details,
         onConfirm: () => {
-          setPhaseConfirmation(null)
+          dialogs.closePhaseConfirmation()
           // Set turn to IDLE
           setGameState((current) => ({
             ...current,
@@ -345,7 +277,7 @@ function App() {
   }
 
   const handleAttack = (heroId: string) => {
-    setAttackingHeroId(heroId)
+    dialogs.openAttackDialog(heroId)
   }
 
   const handleAttackComplete = (heroId: string, hungerGained: number, enemiesDefeated: number) => {
@@ -353,19 +285,21 @@ function App() {
       ...current,
       heroes: current?.heroes.map(h => {
         if (h.id === heroId) {
-          const newHunger = Math.min(4, h.hunger + hungerGained)
-          const newLevel = h.level + enemiesDefeated
-          const newActions = Math.max(0, h.availableActions - 1)
-          return { ...h, hunger: newHunger, level: newLevel, availableActions: newActions }
+          const updatedHero = { 
+            ...h, 
+            hunger: clampHunger(h.hunger + hungerGained), 
+            level: h.level + enemiesDefeated 
+          }
+          return consumeAction(updatedHero)
         }
         return h
       }) || [],
     }))
-    setAttackingHeroId(null)
+    dialogs.closeAttackDialog()
   }
 
   const handleDevour = (heroId: string) => {
-    setDevouringHeroId(heroId)
+    dialogs.openDevourDialog(heroId)
   }
 
   const handleDevourComplete = (heroId: string, hungerGained: number, wasSuccessful: boolean) => {
@@ -373,14 +307,16 @@ function App() {
       ...current,
       heroes: current?.heroes.map(h => {
         if (h.id === heroId) {
-          const newHunger = wasSuccessful ? 0 : Math.min(4, h.hunger + hungerGained)
-          const newActions = Math.max(0, h.availableActions - 1)
-          return { ...h, hunger: newHunger, availableActions: newActions }
+          const updatedHero = { 
+            ...h, 
+            hunger: wasSuccessful ? 0 : clampHunger(h.hunger + hungerGained) 
+          }
+          return consumeAction(updatedHero)
         }
         return h
       }) || [],
     }))
-    setDevouringHeroId(null)
+    dialogs.closeDevourDialog()
   }
 
   const handleGainTrait = (heroId: string) => {
@@ -394,7 +330,7 @@ function App() {
       setGameState((current) => ({
         ...current,
         heroes: current?.heroes.map(h => 
-          h.id === heroId ? { ...h, availableActions: Math.max(0, h.availableActions - 1) } : h
+          h.id === heroId ? consumeAction(h) : h
         ) || [],
       }))
       handleEditTrait(heroId, availableSlotIndex)
@@ -403,7 +339,7 @@ function App() {
       setGameState((current) => ({
         ...current,
         heroes: current?.heroes.map(h => 
-          h.id === heroId ? { ...h, availableActions: Math.max(0, h.availableActions - 1) } : h
+          h.id === heroId ? consumeAction(h) : h
         ) || [],
       }))
       toast.info('No trait slots available! Evaluate manually what to do (e.g., replace an existing trait).', {
@@ -438,8 +374,8 @@ function App() {
       <Toaster position="top-right" />
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
         <Header
-          onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
-          onNewGame={() => setShowInitDialog(true)}
+          onShowKeyboardHelp={dialogs.openKeyboardHelp}
+          onNewGame={dialogs.openInitDialog}
           onStartTurn={triggerStartTurn}
           isAutomaticMode={gameState?.isAutomaticMode || false}
           onToggleAutomaticMode={handleToggleAutomaticMode}
@@ -466,61 +402,57 @@ function App() {
       </div>
 
       <TraitEditDialog
-        open={editingTrait !== null}
-        onClose={() => setEditingTrait(null)}
-        trait={editingTrait?.trait || null}
+        open={dialogs.editingTrait !== null}
+        onClose={dialogs.closeTraitEdit}
+        trait={dialogs.editingTrait?.trait || null}
         onSave={handleSaveTrait}
       />
 
-      {showInitDialog && (
+      {dialogs.showInitDialog && (
         <GameInitDialog
           onStartNew={handleStartNewGame}
           onContinue={handleContinueGame}
-          onClose={() => setShowInitDialog(false)}
+          onClose={dialogs.closeInitDialog}
         />
       )}
 
       <StartTurnDialog
-        open={showStartTurnDialog}
-        heroes={
-          (gameState?.currentRound?.turns.length || 0) >= (gameState?.heroes.length || 0)
-            ? (gameState?.heroes || [])
-            : (gameState?.heroes || []).filter(h => !gameState?.currentRound?.turns.some(t => t.heroId === h.id))
-        }
+        open={dialogs.showStartTurnDialog}
+        heroes={getAvailableHeroes(gameState?.heroes || [], gameState?.currentRound)}
         onSelectHero={handleStartTurn}
-        onClose={() => setShowStartTurnDialog(false)}
+        onClose={dialogs.closeStartTurnDialog}
       />
 
-      <KeyboardShortcuts open={showKeyboardHelp} onClose={() => setShowKeyboardHelp(false)} />
+      <KeyboardShortcuts open={dialogs.showKeyboardHelp} onClose={dialogs.closeKeyboardHelp} />
 
-      {phaseConfirmation && (
+      {dialogs.phaseConfirmation && (
         <PhaseConfirmationDialog
-          open={phaseConfirmation.open}
-          phase={phaseConfirmation.phase}
+          open={dialogs.phaseConfirmation.open}
+          phase={dialogs.phaseConfirmation.phase}
           hero={gameState?.heroes.find(h => h.id === gameState?.currentTurn?.heroId) || null}
-          message={phaseConfirmation.message}
-          details={phaseConfirmation.details}
+          message={dialogs.phaseConfirmation.message}
+          details={dialogs.phaseConfirmation.details}
           isAutomaticMode={gameState?.isAutomaticMode || false}
-          onConfirm={phaseConfirmation.onConfirm}
-          onClose={() => setPhaseConfirmation(null)}
+          onConfirm={dialogs.phaseConfirmation.onConfirm}
+          onClose={dialogs.closePhaseConfirmation}
         />
       )}
 
-      {attackingHeroId && (
+      {dialogs.attackingHeroId && (
         <AttackDialog
           open={true}
-          hero={gameState?.heroes.find(h => h.id === attackingHeroId) || null}
+          hero={gameState?.heroes.find(h => h.id === dialogs.attackingHeroId) || null}
           onComplete={handleAttackComplete}
-          onClose={() => setAttackingHeroId(null)}
+          onClose={dialogs.closeAttackDialog}
         />
       )}
 
-      {devouringHeroId && (
+      {dialogs.devouringHeroId && (
         <DevourDialog
           open={true}
-          hero={gameState?.heroes.find(h => h.id === devouringHeroId) || null}
+          hero={gameState?.heroes.find(h => h.id === dialogs.devouringHeroId) || null}
           onComplete={handleDevourComplete}
-          onClose={() => setDevouringHeroId(null)}
+          onClose={dialogs.closeDevourDialog}
         />
       )}
     </div>

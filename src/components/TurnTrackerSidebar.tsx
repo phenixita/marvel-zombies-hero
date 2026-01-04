@@ -1,6 +1,7 @@
 import { Card } from '@/components/ui/card'
 import { GameState } from "@/lib/GameState"
 import { Hero } from "@/lib/Hero"
+import { getLevelColor, getLevelCategory } from '@/lib/heroUtils'
 import { ArrowRight, Check, Circle } from '@phosphor-icons/react'
 
 interface TurnTrackerSidebarProps {
@@ -32,21 +33,6 @@ export function TurnTrackerSidebar({ gameState, onUpdateHero }: TurnTrackerSideb
 
   // Get active hero
   const activeHero = heroes.find(h => h.id === currentTurn?.heroId)
-
-  // Get level color category
-  const getLevelColor = (level: number): string => {
-    if (level <= 6) return 'bg-blue-500'
-    if (level <= 21) return 'bg-yellow-500'
-    if (level <= 42) return 'bg-orange-500'
-    return 'bg-red-500'
-  }
-
-  const getLevelCategory = (level: number): string => {
-    if (level <= 6) return 'Blue'
-    if (level <= 21) return 'Yellow'
-    if (level <= 42) return 'Orange'
-    return 'Red'
-  }
 
   const handleLevelChange = (value: number[]) => {
     if (!activeHero) return

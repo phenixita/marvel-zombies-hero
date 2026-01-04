@@ -6,8 +6,9 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Hero } from "@/lib/Hero"
 import { cn } from '@/lib/utils'
+import { getLevelColor, getLevelCategory, clampHealth, clampHunger, isRavenous } from '@/lib/heroUtils'
+import { useInlineEdit } from '@/hooks/useInlineEdit'
 import { PencilSimple } from '@phosphor-icons/react'
-import { useState } from 'react'
 import { TraitSlot } from './TraitSlot'
 
 interface HeroCardProps {
@@ -20,68 +21,45 @@ interface HeroCardProps {
 }
 
 export function HeroCard({ hero, onUpdateHero, onEditTrait: onEditTrait, isActiveTurn = false, hasPlayed = false, className }: HeroCardProps) {
-  const [isEditingName, setIsEditingName] = useState(false)
-  const [nameInput, setNameInput] = useState(hero.name)
-  const [isEditingBaseAttack, setIsEditingBaseAttack] = useState(false)
-  const [baseAttackInput, setBaseAttackInput] = useState(hero.baseAttackValue.toString())
-  const [isEditingPrecision, setIsEditingPrecision] = useState(false)
-  const [precisionInput, setPrecisionInput] = useState(hero.precision.toString())
-
-  const handleNameSubmit = () => {
-    if (nameInput.trim()) {
-      onUpdateHero({ ...hero, name: nameInput.trim() })
+  // Inline editing hooks
+  const nameEdit = useInlineEdit(hero.name, (value) => {
+    if (value.trim()) {
+      onUpdateHero({ ...hero, name: value.trim() })
     }
-    setIsEditingName(false)
-  }
+  })
 
-  const handleBaseAttackSubmit = () => {
-    const value = parseInt(baseAttackInput)
-    if (!isNaN(value) && value >= 0) {
-      onUpdateHero({ ...hero, baseAttackValue: value })
-    } else {
-      setBaseAttackInput(hero.baseAttackValue.toString())
-    }
-    setIsEditingBaseAttack(false)
-  }
+  const baseAttackEdit = useInlineEdit(hero.baseAttackValue, (value) => {
+    onUpdateHero({ ...hero, baseAttackValue: value })
+  }, {
+    validator: (val) => {
+      const parsed = parseInt(val)
+      return !isNaN(parsed) && parsed >= 0
+    },
+    parser: (val) => parseInt(val)
+  })
 
-  const handlePrecisionSubmit = () => {
-    const value = parseInt(precisionInput)
-    if (!isNaN(value) && value >= 0) {
-      onUpdateHero({ ...hero, precision: value })
-    } else {
-      setPrecisionInput(hero.precision.toString())
-    }
-    setIsEditingPrecision(false)
-  }
+  const precisionEdit = useInlineEdit(hero.precision, (value) => {
+    onUpdateHero({ ...hero, precision: value })
+  }, {
+    validator: (val) => {
+      const parsed = parseInt(val)
+      return !isNaN(parsed) && parsed >= 1 && parsed <= 6
+    },
+    parser: (val) => parseInt(val)
+  })
 
   const handleHealthChange = (newHealth: number) => {
-    onUpdateHero({ ...hero, health: Math.max(0, Math.min(5, newHealth)) })
+    onUpdateHero({ ...hero, health: clampHealth(newHealth) })
   }
 
   const handleHungerChange = (newHunger: number) => {
-    onUpdateHero({ ...hero, hunger: Math.max(0, Math.min(4, newHunger)) })
+    onUpdateHero({ ...hero, hunger: clampHunger(newHunger) })
   }
 
   const handleDeleteTrait = (traitIndex: number) => {
     const newTraits = hero.traits.filter((_, idx) => idx !== traitIndex)
     onUpdateHero({ ...hero, traits: newTraits })
   }
-
-  const getLevelColor = (level: number): string => {
-    if (level <= 6) return 'bg-blue-500'
-    if (level <= 21) return 'bg-yellow-500'
-    if (level <= 42) return 'bg-orange-500'
-    return 'bg-red-500'
-  }
-
-  const getLevelCategory = (level: number): string => {
-    if (level <= 6) return 'Blue'
-    if (level <= 21) return 'Yellow'
-    if (level <= 42) return 'Orange'
-    return 'Red'
-  }
-
-  const isRavenous = hero.hunger >= 4
 
   return (
     <Card
@@ -98,7 +76,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait: onEditTrait, isActiv
         {/* Column 1: Hunger Scale */}
         <div className={cn(
           "row-span-3 flex flex-col items-center justify-center",
-          isRavenous && "animate-pulse text-destructive"
+          isRavenous(hero) && "animate-pulse text-destructive"
         )}>
           <HungerScale
             hunger={hero.hunger}
@@ -110,18 +88,12 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait: onEditTrait, isActiv
         {/* Column 2, Row 1: Name and Health */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex-1">
-            {isEditingName ? (
+            {nameEdit.isEditing ? (
               <Input
-                value={nameInput}
-                onChange={(e) => setNameInput(e.target.value)}
-                onBlur={handleNameSubmit}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleNameSubmit()
-                  if (e.key === 'Escape') {
-                    setNameInput(hero.name)
-                    setIsEditingName(false)
-                  }
-                }}
+                value={nameEdit.inputValue}
+                onChange={(e) => nameEdit.setInputValue(e.target.value)}
+                onBlur={nameEdit.saveEdit}
+                onKeyDown={nameEdit.handleKeyDown}
                 autoFocus
                 className="font-rajdhani font-bold text-2xl uppercase tracking-tight border-0 border-b-2 rounded-none px-0 focus-visible:ring-0 h-auto py-0"
               />
@@ -137,7 +109,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait: onEditTrait, isActiv
                   size="icon"
                   variant="ghost"
                   className="h-6 w-6 opacity-50 hover:opacity-100 transition-opacity"
-                  onClick={() => setIsEditingName(true)}
+                  onClick={nameEdit.startEdit}
                 >
                   <PencilSimple className="w-3 h-3" />
                 </Button>
@@ -159,18 +131,12 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait: onEditTrait, isActiv
           </Badge>
 
           <div className="flex items-center gap-4">
-            {isEditingBaseAttack ? (
+            {baseAttackEdit.isEditing ? (
               <Input
-                value={baseAttackInput}
-                onChange={(e) => setBaseAttackInput(e.target.value)}
-                onBlur={handleBaseAttackSubmit}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleBaseAttackSubmit()
-                  if (e.key === 'Escape') {
-                    setBaseAttackInput(hero.baseAttackValue.toString())
-                    setIsEditingBaseAttack(false)
-                  }
-                }}
+                value={baseAttackEdit.inputValue}
+                onChange={(e) => baseAttackEdit.setInputValue(e.target.value)}
+                onBlur={baseAttackEdit.saveEdit}
+                onKeyDown={baseAttackEdit.handleKeyDown}
                 autoFocus
                 type="number"
                 min="0"
@@ -178,7 +144,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait: onEditTrait, isActiv
               />
             ) : (
               <button
-                onClick={() => setIsEditingBaseAttack(true)}
+                onClick={baseAttackEdit.startEdit}
                 className="group/attack flex items-center gap-2 px-3 py-1.5 rounded font-medium bg-muted hover:bg-muted/80 transition-colors text-sm"
               >
                 <span className="text-muted-foreground uppercase text-[10px] tracking-wider">Base Attack</span>
@@ -187,18 +153,12 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait: onEditTrait, isActiv
               </button>
             )}
 
-            {isEditingPrecision ? (
+            {precisionEdit.isEditing ? (
               <Input
-                value={precisionInput}
-                onChange={(e) => setPrecisionInput(e.target.value)}
-                onBlur={handlePrecisionSubmit}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handlePrecisionSubmit()
-                  if (e.key === 'Escape') {
-                    setPrecisionInput(hero.precision.toString())
-                    setIsEditingPrecision(false)
-                  }
-                }}
+                value={precisionEdit.inputValue}
+                onChange={(e) => precisionEdit.setInputValue(e.target.value)}
+                onBlur={precisionEdit.saveEdit}
+                onKeyDown={precisionEdit.handleKeyDown}
                 autoFocus
                 type="number"
                 min="1"
@@ -207,7 +167,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait: onEditTrait, isActiv
               />
             ) : (
               <button
-                onClick={() => setIsEditingPrecision(true)}
+                onClick={precisionEdit.startEdit}
                 className="group/precision flex items-center gap-2 px-3 py-1.5 rounded font-medium bg-muted hover:bg-muted/80 transition-colors text-sm"
               >
                 <span className="text-muted-foreground uppercase text-[10px] tracking-wider">Precision</span>
