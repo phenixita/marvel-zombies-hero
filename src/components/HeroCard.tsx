@@ -1,13 +1,12 @@
 import { HealthIndicator } from '@/components/HealthIndicator'
 import { HungerScale } from '@/components/HungerScale'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Hero } from "@/lib/Hero"
-import { cn } from '@/lib/utils'
-import { getLevelColor, getLevelCategory, clampHealth, clampHunger, isRavenous } from '@/lib/heroUtils'
 import { useInlineEdit } from '@/hooks/useInlineEdit'
+import { Hero } from "@/lib/Hero"
+import { clampHealth, clampHunger, getLevelCategory, getLevelColor, isRavenous } from '@/lib/heroUtils'
+import { cn } from '@/lib/utils'
 import { PencilSimple } from '@phosphor-icons/react'
 import { TraitSlot } from './TraitSlot'
 
@@ -44,6 +43,16 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait: onEditTrait, isActiv
     validator: (val) => {
       const parsed = parseInt(val)
       return !isNaN(parsed) && parsed >= 1 && parsed <= 6
+    },
+    parser: (val) => parseInt(val)
+  })
+
+  const levelEdit = useInlineEdit(hero.level, (value) => {
+    onUpdateHero({ ...hero, level: value })
+  }, {
+    validator: (val) => {
+      const parsed = parseInt(val)
+      return !isNaN(parsed) && parsed >= 0
     },
     parser: (val) => parseInt(val)
   })
@@ -126,9 +135,32 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait: onEditTrait, isActiv
 
         {/* Column 2, Row 2: Stats (EXP, Base Attack, Precision) */}
         <div className="flex items-center gap-6">
-          <Badge className={cn('text-white border-0 text-sm px-3 py-1', getLevelColor(hero.level))}>
-            EXP: {hero.level} - {getLevelCategory(hero.level)}
-          </Badge>
+          {levelEdit.isEditing ? (
+            <Input
+              value={levelEdit.inputValue}
+              onChange={(e) => levelEdit.setInputValue(e.target.value)}
+              onBlur={levelEdit.saveEdit}
+              onKeyDown={levelEdit.handleKeyDown}
+              autoFocus
+              type="number"
+              min="0"
+              className="w-20 h-8 px-2 py-0 text-sm"
+            />
+          ) : (
+            <button
+              onClick={levelEdit.startEdit}
+              className={cn(
+                'group/level flex items-center gap-2 px-3 py-1 rounded font-medium transition-colors text-sm text-white border-0 cursor-pointer',
+                getLevelColor(hero.level),
+                'hover:brightness-110'
+              )}
+            >
+              <span className="uppercase text-[10px] tracking-wider opacity-90">EXP</span>
+              <span className="font-rajdhani font-bold text-lg">{hero.level}</span>
+              <span className="text-[10px] opacity-80">- {getLevelCategory(hero.level)}</span>
+              <PencilSimple className="w-3 h-3 opacity-50 group-hover/level:opacity-100 transition-opacity" />
+            </button>
+          )}
 
           <div className="flex items-center gap-4">
             {baseAttackEdit.isEditing ? (
