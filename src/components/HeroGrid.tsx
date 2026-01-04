@@ -1,4 +1,4 @@
-import { HeroActionPanel } from '@/components/HeroActionPanel'
+import { HeroActionPanel } from '@/components/HeroActionPanel/HeroActionPanel'
 import { HeroCard } from '@/components/HeroCard'
 import { Hero } from "@/lib/Hero"
 import { TurnPhase } from "@/lib/TurnPhase"
@@ -18,14 +18,12 @@ interface HeroGridProps {
 
 export function HeroGrid({ heroes, onUpdateHero, onEditTrait: onEditTrait, activeTurnHeroId, playedHeroIds = [], currentTurnPhase, onEndTurn, onAttack, onDevour, onGainTrait }: HeroGridProps) {
   const activeHero = heroes.find(h => h.id === activeTurnHeroId)
-  const showActionPanel = activeHero && currentTurnPhase === 'ACTIONS'
 
   return (
     <div className="flex flex-col gap-2">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
-        
-        
-          {showActionPanel && (
+
+
         <div className="sticky bottom-4 z-50 mt-auto">
           <HeroActionPanel
             hero={activeHero}
@@ -37,8 +35,7 @@ export function HeroGrid({ heroes, onUpdateHero, onEditTrait: onEditTrait, activ
             className="rounded-xl border-2 shadow-2xl"
           />
         </div>
-      )}
-        
+
         {heroes.map((hero) => (
           <HeroCard
             key={hero.id}
@@ -51,7 +48,7 @@ export function HeroGrid({ heroes, onUpdateHero, onEditTrait: onEditTrait, activ
         ))}
       </div>
 
-    
+
     </div>
   )
 }

@@ -3,9 +3,11 @@ import { consumeAction } from '@/lib/gameLogic'
 import { Hero } from "@/lib/Hero"
 import { getMaxActions, isRavenous } from '@/lib/heroUtils'
 import { cn } from '@/lib/utils'
+import { Stop } from '@phosphor-icons/react'
+import { actionButtonClassName } from './styles'
 
 interface HeroActionPanelProps {
-  hero: Hero
+  hero: Hero | undefined
   onUpdateHero: (hero: Hero) => void
   onEndTurn: () => void
   onAttack?: (heroId: string) => void
@@ -15,32 +17,32 @@ interface HeroActionPanelProps {
 }
 
 export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDevour, onGainTrait, className }: HeroActionPanelProps) {
-  const ravenous = isRavenous(hero)
-  const actionsRemaining = hero.availableActions ?? 0
-  const totalActions = getMaxActions(hero.level)
+  const ravenous = hero ? isRavenous(hero) : false
+  const actionsRemaining = hero?.availableActions ?? 0
+  const totalActions = hero ? getMaxActions(hero.level) : 0
   const actionsExhausted = actionsRemaining === 0
+
+  const isActionDisabled = actionsExhausted || ravenous || !hero
 
   const handleAction = (action: 'devour' | 'attack' | 'move' | 'interact' | 'open_door' | 'gain_trait') => {
     if (actionsRemaining <= 0) return
 
-    // Special actions that open dialogs
     if (action === 'attack') {
-      onAttack?.(hero.id)
+      onAttack?.(hero!.id)
       return
     }
 
     if (action === 'devour') {
-      onDevour?.(hero.id)
+      onDevour?.(hero!.id)
       return
     }
 
     if (action === 'gain_trait') {
-      onGainTrait?.(hero.id)
+      onGainTrait?.(hero!.id)
       return
     }
 
-    // Generic actions simply consume an action
-    onUpdateHero(consumeAction(hero))
+    onUpdateHero(consumeAction(hero!))
   }
 
   return (
@@ -51,13 +53,13 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
       <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-4">
         <div className="flex items-center gap-4 flex-shrink-0">
           <div className="flex flex-col">
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Active Hero</span>
-            <span className="font-rajdhani font-bold text-xl text-accent-11 uppercase">{hero.name}</span>
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold"> {hero ? "Active Hero" : "Waiting..."}</span>
+            <span className="font-rajdhani font-bold text-xl text-accent-11 uppercase">{hero?.name}</span>
             {ravenous && (<span className="text-xs text-red-500 font-bold mt-1 uppercase">Ravenous!</span>)}
           </div>
-          
+
           <div className="h-10 w-[2px] bg-border hidden md:block" />
-          
+
           <div className="flex flex-col items-center">
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Actions</span>
             <span className={cn(
@@ -67,14 +69,12 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
           </div>
         </div>
 
-        
-
         <div className="flex-1 grid grid-cols-3 sm:grid-cols-6 gap-2 w-full">
           <Button
             size="sm"
             variant="secondary"
-            className="h-10 text-[10px] uppercase font-bold tracking-tight"
-            disabled={actionsExhausted || ravenous}
+            className={actionButtonClassName}
+            disabled={isActionDisabled}
             onClick={() => handleAction('move')}
           >
             Move
@@ -82,8 +82,8 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
           <Button
             size="sm"
             variant="secondary"
-            className="h-10 text-[10px] uppercase font-bold tracking-tight"
-            disabled={actionsExhausted || ravenous}
+            className={actionButtonClassName}
+            disabled={isActionDisabled}
             onClick={() => handleAction('attack')}
           >
             Attack
@@ -91,8 +91,8 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
           <Button
             size="sm"
             variant="secondary"
-            className="h-10 text-[10px] uppercase font-bold tracking-tight"
-            disabled={actionsExhausted}
+            className={actionButtonClassName}
+            disabled={!hero || hero.hunger < 1 || actionsExhausted}
             onClick={() => handleAction('devour')}
           >
             Devour
@@ -100,8 +100,8 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
           <Button
             size="sm"
             variant="secondary"
-            className="h-10 text-[10px] uppercase font-bold tracking-tight"
-            disabled={actionsExhausted || ravenous}
+            className={actionButtonClassName}
+            disabled={isActionDisabled}
             onClick={() => handleAction('open_door')}
           >
             Open Door
@@ -109,8 +109,8 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
           <Button
             size="sm"
             variant="secondary"
-            className="h-10 text-[10px] uppercase font-bold tracking-tight"
-            disabled={actionsExhausted || ravenous}
+            className={actionButtonClassName}
+            disabled={isActionDisabled}
             onClick={() => handleAction('gain_trait')}
           >
             Gain Trait
@@ -118,8 +118,8 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
           <Button
             size="sm"
             variant="secondary"
-            className="h-10 text-[10px] uppercase font-bold tracking-tight"
-            disabled={actionsExhausted || ravenous}
+            className={actionButtonClassName}
+            disabled={isActionDisabled}
             onClick={() => handleAction('interact')}
           >
             Interact
@@ -128,10 +128,11 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
 
         <Button
           variant="default"
-          className="w-full md:w-32 h-10 font-rajdhani font-bold uppercase bg-accent-9 hover:bg-accent-10 text-white"
+          className="w-full md:w-32 h-10 font-rajdhani font-bold uppercase"
           onClick={onEndTurn}
+          disabled={!hero}
         >
-          End Turn
+          <Stop /> End Turn
         </Button>
       </div>
     </div>
