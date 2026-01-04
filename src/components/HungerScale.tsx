@@ -1,5 +1,5 @@
-import { Skull } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
+import { Skull } from '@phosphor-icons/react'
 
 interface HungerScaleProps {
   hunger: number
@@ -10,7 +10,7 @@ interface HungerScaleProps {
 
 export function HungerScale({ hunger, maxHunger, onChange, className }: HungerScaleProps) {
   return (
-    <div className={cn('flex flex-col-reverse gap-2', className)}>
+    <div className={cn('flex flex-col-reverse gap-1', className)}>
       <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted text-muted-foreground">
         <Skull weight="fill" className="w-6 h-6" />
       </div>

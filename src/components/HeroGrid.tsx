@@ -19,8 +19,8 @@ export function HeroGrid({ heroes, onUpdateHero, onEditPower, activeTurnHeroId, 
   const showActionPanel = activeHero && currentTurnPhase === 'ACTIONS'
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+    <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
         {heroes.map((hero) => (
           <HeroCard
             key={hero.id}

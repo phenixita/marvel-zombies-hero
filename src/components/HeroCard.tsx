@@ -1,15 +1,14 @@
 import { HealthIndicator } from '@/components/HealthIndicator'
 import { HungerScale } from '@/components/HungerScale'
-import { PowerSlot } from '@/components/PowerSlot'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Hero } from "@/lib/Hero"
-import { TurnPhase } from "@/lib/TurnPhase"
 import { cn } from '@/lib/utils'
 import { PencilSimple } from '@phosphor-icons/react'
 import { useState } from 'react'
+import { PowerSlot } from './PowerSlot'
 
 interface HeroCardProps {
   hero: Hero
@@ -86,17 +85,20 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
   return (
     <Card
       className={cn(
-        'relative p-2 bg-card border-2 transition-all duration-200',
+        'relative border-2 transition-all duration-200',
         'shadow-lg hover:shadow-xl',
         isActiveTurn
           ? 'border-accent-9 border-4 ring-2 ring-accent-9/20'
           : 'border-border hover:border-accent/30',
-        isRavenous && 'border-destructive/80 animate-pulse',
         className
       )}
     >
-      <div className="flex gap-4">
-        <div className="flex-shrink-0">
+      <div className="grid grid-cols-[auto_1fr] gap-6 p-2">
+        {/* Column 1: Hunger Scale */}
+        <div className={cn(
+          "row-span-3 flex flex-col items-center justify-center",
+          isRavenous && "animate-pulse text-destructive"
+        )}>
           <HungerScale
             hunger={hero.hunger}
             maxHunger={4}
@@ -104,8 +106,9 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
           />
         </div>
 
-        <div className="flex-1 space-y-4">
-          <div className="flex items-center justify-between">
+        {/* Column 2, Row 1: Name and Health */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1">
             {isEditingName ? (
               <Input
                 value={nameInput}
@@ -119,12 +122,12 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
                   }
                 }}
                 autoFocus
-                className="font-rajdhani font-bold text-2xl uppercase tracking-tight border-0 border-b-2 rounded-none px-0 focus-visible:ring-0"
+                className="font-rajdhani font-bold text-2xl uppercase tracking-tight border-0 border-b-2 rounded-none px-0 focus-visible:ring-0 h-auto py-0"
               />
             ) : (
               <div className="group flex items-center gap-2">
                 <h2 className={cn(
-                  'font-rajdhani font-bold text-2xl uppercase tracking-tight',
+                  'font-rajdhani font-bold text-3xl uppercase tracking-tight leading-none',
                   isActiveTurn ? 'text-accent-11' : 'text-foreground'
                 )}>
                   {hero.name}
@@ -132,47 +135,57 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="h-6 w-6 opacity-50 hover:opacity-100 transition-opacity"
                   onClick={() => setIsEditingName(true)}
                 >
                   <PencilSimple className="w-3 h-3" />
                 </Button>
               </div>
             )}
+          </div>
 
-            <div className="flex items-center gap-2">
-              <Badge className={cn('text-white border-0 text-xs', getLevelColor(hero.level))}>
-                Lvl {hero.level} - {getLevelCategory(hero.level)}
-              </Badge>
+          <HealthIndicator
+            health={hero.health}
+            maxHealth={5}
+            onChange={handleHealthChange}
+          />
+        </div>
 
-              {isEditingBaseAttack ? (
-                <Input
-                  value={baseAttackInput}
-                  onChange={(e) => setBaseAttackInput(e.target.value)}
-                  onBlur={handleBaseAttackSubmit}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleBaseAttackSubmit()
-                    if (e.key === 'Escape') {
-                      setBaseAttackInput(hero.baseAttackValue.toString())
-                      setIsEditingBaseAttack(false)
-                    }
-                  }}
-                  autoFocus
-                  type="number"
-                  min="0"
-                  className="w-16 h-6 px-2 py-0 text-xs"
-                />
-              ) : (
-                <button
-                  onClick={() => setIsEditingBaseAttack(true)}
-                  className="group/attack flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-muted hover:bg-muted/80 transition-colors"
-                >
-                  <span className="text-muted-foreground">BASE ATTACK </span>
-                  <span className="font-rajdhani font-bold">{hero.baseAttackValue}</span>
-                  <PencilSimple className="w-3 h-3 opacity-0 group-hover/attack:opacity-100 transition-opacity" />
-                </button>
-              )}
-            </div>
+        {/* Column 2, Row 2: Stats (EXP, Base Attack, Precision) */}
+        <div className="flex items-center gap-6">
+          <Badge className={cn('text-white border-0 text-sm px-3 py-1', getLevelColor(hero.level))}>
+            EXP: {hero.level} - {getLevelCategory(hero.level)}
+          </Badge>
+
+          <div className="flex items-center gap-4">
+            {isEditingBaseAttack ? (
+              <Input
+                value={baseAttackInput}
+                onChange={(e) => setBaseAttackInput(e.target.value)}
+                onBlur={handleBaseAttackSubmit}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleBaseAttackSubmit()
+                  if (e.key === 'Escape') {
+                    setBaseAttackInput(hero.baseAttackValue.toString())
+                    setIsEditingBaseAttack(false)
+                  }
+                }}
+                autoFocus
+                type="number"
+                min="0"
+                className="w-16 h-8 px-2 py-0 text-sm"
+              />
+            ) : (
+              <button
+                onClick={() => setIsEditingBaseAttack(true)}
+                className="group/attack flex items-center gap-2 px-3 py-1.5 rounded font-medium bg-muted hover:bg-muted/80 transition-colors text-sm"
+              >
+                <span className="text-muted-foreground uppercase text-[10px] tracking-wider">Base Attack</span>
+                <span className="font-rajdhani font-bold text-lg">{hero.baseAttackValue}</span>
+                <PencilSimple className="w-3 h-3 opacity-50 group-hover/attack:opacity-100 transition-opacity" />
+              </button>
+            )}
+
             {isEditingPrecision ? (
               <Input
                 value={precisionInput}
@@ -188,38 +201,32 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
                 autoFocus
                 type="number"
                 min="1"
-                defaultValue="3"
                 max="6"
-                className="w-16 h-6 px-2 py-0 text-xs"
+                className="w-16 h-8 px-2 py-0 text-sm"
               />
             ) : (
               <button
                 onClick={() => setIsEditingPrecision(true)}
-                className="group/attack flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-muted hover:bg-muted/80 transition-colors"
+                className="group/precision flex items-center gap-2 px-3 py-1.5 rounded font-medium bg-muted hover:bg-muted/80 transition-colors text-sm"
               >
-                <span className="text-muted-foreground">PRECISION </span>
-                <span className="font-rajdhani font-bold">{hero.precision}</span>
-                <PencilSimple className="w-3 h-3 opacity-0 group-hover/attack:opacity-100 transition-opacity" />
+                <span className="text-muted-foreground uppercase text-[10px] tracking-wider">Precision</span>
+                <span className="font-rajdhani font-bold text-lg">{hero.precision}+</span>
+                <PencilSimple className="w-3 h-3 opacity-50 group-hover/precision:opacity-100 transition-opacity" />
               </button>
             )}
           </div>
+        </div>
 
-          <HealthIndicator
-            health={hero.health}
-            maxHealth={5}
-            onChange={handleHealthChange}
-          />
-
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <PowerSlot
-                key={index}
-                power={hero.powers[index] || null}
-                onEdit={() => onEditPower(index)}
-                onDelete={hero.powers[index] ? () => handleDeletePower(index) : undefined}
-              />
-            ))}
-          </div>
+        {/* Column 2, Row 3: Power Slots */}
+        <div className="grid grid-cols-2 gap-4">
+          {Array.from({ length: 2 }).map((_, index) => (
+            <PowerSlot
+              key={index}
+              power={hero.powers[index] || null}
+              onEdit={() => onEditPower(index)}
+              onDelete={hero.powers[index] ? () => handleDeletePower(index) : undefined}
+            />
+          ))}
         </div>
       </div>
     </Card>

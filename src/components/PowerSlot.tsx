@@ -46,7 +46,7 @@ export function PowerSlot({ power, onEdit, onDelete, className }: PowerSlotProps
       </div>
       <p className="text-xs text-foreground/80 leading-relaxed pl-6">{power.description}</p>
       
-      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute top-2 right-2 flex gap-1 opacity-50 group-hover:opacity-100 transition-opacity">
         <Button
           size="icon"
           variant="ghost"
