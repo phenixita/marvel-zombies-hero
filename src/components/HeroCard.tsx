@@ -1,4 +1,3 @@
-import { HealthIndicator } from '@/components/HealthIndicator'
 import { HungerScale } from '@/components/HungerScale'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -8,6 +7,7 @@ import { Hero } from "@/lib/Hero"
 import { clampHealth, clampHunger, getLevelCategory, getLevelColor, isRavenous } from '@/lib/heroUtils'
 import { cn } from '@/lib/utils'
 import { PencilSimple } from '@phosphor-icons/react'
+import { HealthIndicator } from './HealthIndicator'
 import { TraitSlot } from './TraitSlot'
 
 interface HeroCardProps {
@@ -101,12 +101,8 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
 
         {/* Row 1, Columns 2-4: Health, Name and Stats */}
         <div className="col-span-3 flex items-center justify-between gap-6">
-          <HealthIndicator
-            health={hero.health}
-            maxHealth={5}
-            onChange={handleHealthChange}
-          />
-          
+
+
           <div className="flex-1">
             {nameEdit.isEditing ? (
               <Input
@@ -136,6 +132,12 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
               </div>
             )}
           </div>
+
+          <HealthIndicator
+            health={hero.health}
+            maxHealth={5}
+            onChange={handleHealthChange}
+          />
         </div>
 
         {/* Row 2, Column 2: ByStander Slot */}
@@ -213,7 +215,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
       </div>
 
       {/* Footer: EXP Bar */}
-      <div 
+      <div
         className={cn(
           "w-full py-1.5 flex items-center justify-center gap-3 cursor-pointer transition-colors hover:brightness-110 mt-auto",
           getLevelColor(hero.level)
