@@ -6,7 +6,7 @@ import { TurnPhase } from "@/lib/TurnPhase"
 interface HeroGridProps {
   heroes: Hero[]
   onUpdateHero: (hero: Hero) => void
-  onEditPower: (heroId: string, powerIndex: number) => void
+  onEditTrait: (heroId: string, traitIndex: number) => void
   activeTurnHeroId?: string
   playedHeroIds?: string[]
   currentTurnPhase?: TurnPhase
@@ -16,7 +16,7 @@ interface HeroGridProps {
   onGainTrait?: (heroId: string) => void
 }
 
-export function HeroGrid({ heroes, onUpdateHero, onEditPower, activeTurnHeroId, playedHeroIds = [], currentTurnPhase, onEndTurn, onAttack, onDevour, onGainTrait }: HeroGridProps) {
+export function HeroGrid({ heroes, onUpdateHero, onEditTrait: onEditTrait, activeTurnHeroId, playedHeroIds = [], currentTurnPhase, onEndTurn, onAttack, onDevour, onGainTrait }: HeroGridProps) {
   const activeHero = heroes.find(h => h.id === activeTurnHeroId)
   const showActionPanel = activeHero && currentTurnPhase === 'ACTIONS'
 
@@ -28,7 +28,7 @@ export function HeroGrid({ heroes, onUpdateHero, onEditPower, activeTurnHeroId, 
             key={hero.id}
             hero={hero}
             onUpdateHero={onUpdateHero}
-            onEditPower={(powerIndex) => onEditPower(hero.id, powerIndex)}
+            onEditTrait={(traitIndex) => onEditTrait(hero.id, traitIndex)}
             isActiveTurn={hero.id === activeTurnHeroId}
             hasPlayed={playedHeroIds.includes(hero.id)}
           />

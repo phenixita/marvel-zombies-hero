@@ -10,35 +10,35 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Power } from "@/lib/Power"
+import { Trait } from "@/lib/Trait"
 import { useEffect, useState } from 'react'
 
-interface PowerEditDialogProps {
+interface TraitEditDialogProps {
   open: boolean
   onClose: () => void
-  power: Power | null
-  onSave: (power: Power) => void
+  trait: Trait | null
+  onSave: (trait: Trait) => void
 }
 
-export function PowerEditDialog({ open, onClose, power, onSave }: PowerEditDialogProps) {
+export function TraitEditDialog({ open, onClose, trait, onSave }: TraitEditDialogProps) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
 
   useEffect(() => {
-    if (power) {
-      setTitle(power.title)
-      setDescription(power.description)
+    if (trait) {
+      setTitle(trait.title)
+      setDescription(trait.description)
     } else {
       setTitle('')
       setDescription('')
     }
-  }, [power, open])
+  }, [trait, open])
 
   const handleSave = () => {
     if (!title.trim()) return
 
     onSave({
-      id: power?.id || crypto.randomUUID(),
+      id: trait?.id || crypto.randomUUID(),
       title: title.trim(),
       description: description.trim(),
     })
@@ -59,7 +59,7 @@ export function PowerEditDialog({ open, onClose, power, onSave }: PowerEditDialo
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="font-rajdhani text-2xl uppercase">
-            {power ? 'Edit Power' : 'Add Power'}
+            {trait ? 'Edit Trait' : 'Add Trait'}
           </DialogTitle>
           <DialogDescription>
             Define the hero's special ability and its effects
@@ -68,11 +68,11 @@ export function PowerEditDialog({ open, onClose, power, onSave }: PowerEditDialo
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="power-title" className="font-rajdhani uppercase text-sm">
-              Power Name
+            <Label htmlFor="trait-title" className="font-rajdhani uppercase text-sm">
+              Trait Name
             </Label>
             <Input
-              id="power-title"
+              id="trait-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -83,15 +83,15 @@ export function PowerEditDialog({ open, onClose, power, onSave }: PowerEditDialo
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="power-description" className="font-rajdhani uppercase text-sm">
+            <Label htmlFor="trait-description" className="font-rajdhani uppercase text-sm">
               Description
             </Label>
             <Textarea
-              id="power-description"
+              id="trait-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Describe the power's effect..."
+              placeholder="Describe the trait's effect..."
               rows={4}
               className="resize-none"
             />
@@ -103,7 +103,7 @@ export function PowerEditDialog({ open, onClose, power, onSave }: PowerEditDialo
             Cancel
           </Button>
           <Button onClick={handleSave} disabled={!title.trim()}>
-            Save Power
+            Save Trait
           </Button>
         </DialogFooter>
       </DialogContent>

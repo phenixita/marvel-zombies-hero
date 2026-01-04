@@ -1,4 +1,4 @@
-import { Power } from "./Power";
+import { Trait } from "./Trait";
 
 
 export interface Hero {
@@ -9,6 +9,6 @@ export interface Hero {
   level: number;
   baseAttackValue: number;
   precision: number;
-  powers: Power[];
+  traits: Trait[];
   availableActions: number;
 }

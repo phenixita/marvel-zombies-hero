@@ -1,17 +1,17 @@
 import { Button } from '@/components/ui/button'
-import { Power } from "@/lib/Power"
+import { Trait } from "@/lib/Trait"
 import { cn } from '@/lib/utils'
 import { Lightning, PencilSimple, Trash } from '@phosphor-icons/react'
 
-interface PowerSlotProps {
-  power: Power | null
+interface TraitSlotProps {
+  trait: Trait | null
   onEdit: () => void
   onDelete?: () => void
   className?: string
 }
 
-export function PowerSlot({ power, onEdit, onDelete, className }: PowerSlotProps) {
-  if (!power) {
+export function TraitSlot({ trait, onEdit, onDelete, className }: TraitSlotProps) {
+  if (!trait) {
     return (
       <button
         onClick={onEdit}
@@ -24,7 +24,7 @@ export function PowerSlot({ power, onEdit, onDelete, className }: PowerSlotProps
       >
         <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground group-hover:text-accent transition-colors">
           <Lightning weight="regular" className="w-5 h-5" />
-          <span className="text-xs font-medium uppercase tracking-wide">Add Power</span>
+          <span className="text-xs font-medium uppercase tracking-wide">Add Trait</span>
         </div>
       </button>
     )
@@ -41,10 +41,10 @@ export function PowerSlot({ power, onEdit, onDelete, className }: PowerSlotProps
       <div className="flex items-start gap-2 mb-2">
         <Lightning weight="fill" className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
         <h3 className="font-rajdhani font-semibold text-sm uppercase tracking-tight text-accent flex-1 leading-tight">
-          {power.title}
+          {trait.title}
         </h3>
       </div>
-      <p className="text-xs text-foreground/80 leading-relaxed pl-6">{power.description}</p>
+      <p className="text-xs text-foreground/80 leading-relaxed pl-6">{trait.description}</p>
       
       <div className="absolute top-2 right-2 flex gap-1 opacity-50 group-hover:opacity-100 transition-opacity">
         <Button

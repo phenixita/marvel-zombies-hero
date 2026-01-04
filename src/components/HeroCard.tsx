@@ -8,18 +8,18 @@ import { Hero } from "@/lib/Hero"
 import { cn } from '@/lib/utils'
 import { PencilSimple } from '@phosphor-icons/react'
 import { useState } from 'react'
-import { PowerSlot } from './PowerSlot'
+import { TraitSlot } from './TraitSlot'
 
 interface HeroCardProps {
   hero: Hero
   onUpdateHero: (hero: Hero) => void
-  onEditPower: (powerIndex: number) => void
+  onEditTrait: (traitIndex: number) => void
   isActiveTurn?: boolean
   hasPlayed?: boolean
   className?: string
 }
 
-export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false, hasPlayed = false, className }: HeroCardProps) {
+export function HeroCard({ hero, onUpdateHero, onEditTrait: onEditTrait, isActiveTurn = false, hasPlayed = false, className }: HeroCardProps) {
   const [isEditingName, setIsEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(hero.name)
   const [isEditingBaseAttack, setIsEditingBaseAttack] = useState(false)
@@ -62,9 +62,9 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
     onUpdateHero({ ...hero, hunger: Math.max(0, Math.min(4, newHunger)) })
   }
 
-  const handleDeletePower = (powerIndex: number) => {
-    const newPowers = hero.powers.filter((_, idx) => idx !== powerIndex)
-    onUpdateHero({ ...hero, powers: newPowers })
+  const handleDeleteTrait = (traitIndex: number) => {
+    const newTraits = hero.traits.filter((_, idx) => idx !== traitIndex)
+    onUpdateHero({ ...hero, traits: newTraits })
   }
 
   const getLevelColor = (level: number): string => {
@@ -218,14 +218,14 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
           </div>
         </div>
 
-        {/* Column 2, Row 3: Power Slots */}
+        {/* Column 2, Row 3: Trait Slots */}
         <div className="grid grid-cols-2 gap-4">
           {Array.from({ length: 2 }).map((_, index) => (
-            <PowerSlot
+            <TraitSlot
               key={index}
-              power={hero.powers[index] || null}
-              onEdit={() => onEditPower(index)}
-              onDelete={hero.powers[index] ? () => handleDeletePower(index) : undefined}
+              trait={hero.traits[index] || null}
+              onEdit={() => onEditTrait(index)}
+              onDelete={hero.traits[index] ? () => handleDeleteTrait(index) : undefined}
             />
           ))}
         </div>

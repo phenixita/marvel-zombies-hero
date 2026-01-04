@@ -1,4 +1,4 @@
-export interface Power {
+export interface Trait {
   id: string;
   title: string;
   description: string;

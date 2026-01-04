@@ -5,16 +5,16 @@ import { Header } from '@/components/Header'
 import { HeroGrid } from '@/components/HeroGrid'
 import { KeyboardShortcuts } from '@/components/KeyboardShortcuts'
 import { PhaseConfirmationDialog } from '@/components/PhaseConfirmationDialog'
-import { PowerEditDialog } from '@/components/PowerEditDialog'
 import { StartTurnDialog } from '@/components/StartTurnDialog'
 import { TurnTrackerSidebar } from '@/components/TurnTrackerSidebar'
 import { usePersistentState } from '@/hooks/usePersistentState'
 import { useEffect, useState } from 'react'
 import { Toaster, toast } from 'sonner'
+import { TraitEditDialog } from './components/TraitEditDialog'
 import { GameState } from "./lib/GameState"
 import { Hero } from "./lib/Hero"
-import { Power } from "./lib/Power"
 import { Round } from "./lib/Round"
+import { Trait } from "./lib/Trait"
 import { Turn } from "./lib/Turn"
 
 function App() {
@@ -26,10 +26,10 @@ function App() {
     }
   )
 
-  const [editingPower, setEditingPower] = useState<{
+  const [editingTrait, setEditingTrait] = useState<{
     heroId: string
-    powerIndex: number
-    power: Power | null
+    traitIndex: number
+    trait: Trait | null
   } | null>(null)
 
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
@@ -75,7 +75,7 @@ function App() {
       level: 0,
       baseAttackValue: 2,
       precision: 3,
-      powers: [],
+      traits: [],
       availableActions: 3,
     }))
 
@@ -98,34 +98,34 @@ function App() {
     }))
   }
 
-  const handleEditPower = (heroId: string, powerIndex: number) => {
+  const handleEditTrait = (heroId: string, traitIndex: number) => {
     const hero = gameState?.heroes.find((h) => h.id === heroId)
     if (!hero) return
 
-    setEditingPower({
+    setEditingTrait({
       heroId,
-      powerIndex,
-      power: hero.powers[powerIndex] || null,
+      traitIndex: traitIndex,
+      trait: hero.traits[traitIndex] || null,
     })
   }
 
-  const handleSavePower = (power: Power) => {
-    if (!editingPower) return
+  const handleSaveTrait = (trait: Trait) => {
+    if (!editingTrait) return
 
     setGameState((current) => ({
       ...current,
       heroes: current?.heroes.map((hero) => {
-        if (hero.id === editingPower.heroId) {
-          const newPowers = [...hero.powers]
-          newPowers[editingPower.powerIndex] = power
-          return { ...hero, powers: newPowers }
+        if (hero.id === editingTrait.heroId) {
+          const newTraits = [...hero.traits]
+          newTraits[editingTrait.traitIndex] = trait
+          return { ...hero, traits: newTraits }
         }
         return hero
       }) || [],
     }))
 
-    setEditingPower(null)
-    toast.success('Power saved')
+    setEditingTrait(null)
+    toast.success('Trait saved')
   }
 
   const handleToggleAutomaticMode = () => {
@@ -387,7 +387,7 @@ function App() {
     const hero = gameState?.heroes.find(h => h.id === heroId)
     if (!hero) return
 
-    const availableSlotIndex = [0, 1].find(idx => !hero.powers[idx])
+    const availableSlotIndex = [0, 1].find(idx => !hero.traits[idx])
 
     if (availableSlotIndex !== undefined) {
       // Consume action and open edit dialog
@@ -397,7 +397,7 @@ function App() {
           h.id === heroId ? { ...h, availableActions: Math.max(0, h.availableActions - 1) } : h
         ) || [],
       }))
-      handleEditPower(heroId, availableSlotIndex)
+      handleEditTrait(heroId, availableSlotIndex)
     } else {
       // No slots available
       setGameState((current) => ({
@@ -406,7 +406,7 @@ function App() {
           h.id === heroId ? { ...h, availableActions: Math.max(0, h.availableActions - 1) } : h
         ) || [],
       }))
-      toast.info('No power slots available! Evaluate manually what to do (e.g., replace an existing power).', {
+      toast.info('No trait slots available! Evaluate manually what to do (e.g., replace an existing trait).', {
         duration: 5000,
       })
     }
@@ -453,7 +453,7 @@ function App() {
           <HeroGrid
             heroes={gameState?.heroes || []}
             onUpdateHero={handleUpdateHero}
-            onEditPower={handleEditPower}
+            onEditTrait={handleEditTrait}
             activeTurnHeroId={gameState?.currentTurn?.heroId}
             playedHeroIds={gameState?.currentRound?.turns.map(t => t.heroId) || []}
             currentTurnPhase={gameState?.currentTurn?.phase}
@@ -465,11 +465,11 @@ function App() {
         </main>
       </div>
 
-      <PowerEditDialog
-        open={editingPower !== null}
-        onClose={() => setEditingPower(null)}
-        power={editingPower?.power || null}
-        onSave={handleSavePower}
+      <TraitEditDialog
+        open={editingTrait !== null}
+        onClose={() => setEditingTrait(null)}
+        trait={editingTrait?.trait || null}
+        onSave={handleSaveTrait}
       />
 
       {showInitDialog && (
