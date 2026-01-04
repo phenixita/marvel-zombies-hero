@@ -15,10 +15,11 @@ interface HeroCardProps {
   onUpdateHero: (hero: Hero) => void
   onEditPower: (powerIndex: number) => void
   isActiveTurn?: boolean
+  hasPlayed?: boolean
   className?: string
 }
 
-export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false, className }: HeroCardProps) {
+export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false, hasPlayed = false, className }: HeroCardProps) {
   const [isEditingName, setIsEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(hero.name)
   const [isEditingBaseAttack, setIsEditingBaseAttack] = useState(false)
@@ -128,7 +129,7 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
               <div className="group flex items-center gap-2">
                 <h2 className={cn(
                   'font-rajdhani font-bold text-3xl uppercase tracking-tight leading-none',
-                  isActiveTurn ? 'text-accent-11' : 'text-foreground'
+                  isActiveTurn ? 'text-accent-11' : (hasPlayed ? 'text-muted-foreground/60' : 'text-foreground')
                 )}>
                   {hero.name}
                 </h2>

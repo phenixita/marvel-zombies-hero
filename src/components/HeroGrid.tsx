@@ -8,13 +8,15 @@ interface HeroGridProps {
   onUpdateHero: (hero: Hero) => void
   onEditPower: (heroId: string, powerIndex: number) => void
   activeTurnHeroId?: string
+  playedHeroIds?: string[]
   currentTurnPhase?: TurnPhase
   onEndTurn: () => void
   onAttack?: (heroId: string) => void
   onDevour?: (heroId: string) => void
+  onGainTrait?: (heroId: string) => void
 }
 
-export function HeroGrid({ heroes, onUpdateHero, onEditPower, activeTurnHeroId, currentTurnPhase, onEndTurn, onAttack, onDevour }: HeroGridProps) {
+export function HeroGrid({ heroes, onUpdateHero, onEditPower, activeTurnHeroId, playedHeroIds = [], currentTurnPhase, onEndTurn, onAttack, onDevour, onGainTrait }: HeroGridProps) {
   const activeHero = heroes.find(h => h.id === activeTurnHeroId)
   const showActionPanel = activeHero && currentTurnPhase === 'ACTIONS'
 
@@ -28,6 +30,7 @@ export function HeroGrid({ heroes, onUpdateHero, onEditPower, activeTurnHeroId, 
             onUpdateHero={onUpdateHero}
             onEditPower={(powerIndex) => onEditPower(hero.id, powerIndex)}
             isActiveTurn={hero.id === activeTurnHeroId}
+            hasPlayed={playedHeroIds.includes(hero.id)}
           />
         ))}
       </div>
@@ -40,6 +43,7 @@ export function HeroGrid({ heroes, onUpdateHero, onEditPower, activeTurnHeroId, 
             onEndTurn={onEndTurn}
             onAttack={onAttack}
             onDevour={onDevour}
+            onGainTrait={onGainTrait}
             className="rounded-xl border-2 shadow-2xl"
           />
         </div>

@@ -172,9 +172,9 @@ function App() {
     setGameState((current) => {
       const currentRound = current?.currentRound
       
-      // Reset available actions for the active hero
+      // Reset available actions for the active hero (4 if level >= 7, else 3)
       const updatedHeroes = current?.heroes.map(h => 
-        h.id === hero.id ? { ...h, availableActions: 3 } : h
+        h.id === hero.id ? { ...h, availableActions: h.level >= 7 ? 4 : 3 } : h
       ) || []
 
       // Check if we need to start a new round
@@ -253,6 +253,10 @@ function App() {
   }
 
   const enterActionsPhase = () => {
+    const activeTurn = gameState?.currentTurn
+    const hero = gameState?.heroes.find(h => h.id === activeTurn?.heroId)
+    const actionCount = hero && hero.level >= 7 ? 4 : 3
+
     setGameState((current) => ({
       ...current,
       currentTurn: current?.currentTurn ? {
@@ -261,7 +265,7 @@ function App() {
       } : undefined,
     }))
     
-    toast.success('Actions phase - Perform your 3 actions')
+    toast.success(`Actions phase - Perform your ${actionCount} actions`)
   }
 
   const handleEndTurn = () => {
@@ -379,6 +383,35 @@ function App() {
     setDevouringHeroId(null)
   }
 
+  const handleGainTrait = (heroId: string) => {
+    const hero = gameState?.heroes.find(h => h.id === heroId)
+    if (!hero) return
+
+    const availableSlotIndex = [0, 1].find(idx => !hero.powers[idx])
+
+    if (availableSlotIndex !== undefined) {
+      // Consume action and open edit dialog
+      setGameState((current) => ({
+        ...current,
+        heroes: current?.heroes.map(h => 
+          h.id === heroId ? { ...h, availableActions: Math.max(0, h.availableActions - 1) } : h
+        ) || [],
+      }))
+      handleEditPower(heroId, availableSlotIndex)
+    } else {
+      // No slots available
+      setGameState((current) => ({
+        ...current,
+        heroes: current?.heroes.map(h => 
+          h.id === heroId ? { ...h, availableActions: Math.max(0, h.availableActions - 1) } : h
+        ) || [],
+      }))
+      toast.info('No power slots available! Evaluate manually what to do (e.g., replace an existing power).', {
+        duration: 5000,
+      })
+    }
+  }
+
 
   if (!gameState?.heroes || gameState.heroes.length === 0) {
     return (
@@ -422,10 +455,12 @@ function App() {
             onUpdateHero={handleUpdateHero}
             onEditPower={handleEditPower}
             activeTurnHeroId={gameState?.currentTurn?.heroId}
+            playedHeroIds={gameState?.currentRound?.turns.map(t => t.heroId) || []}
             currentTurnPhase={gameState?.currentTurn?.phase}
             onEndTurn={handleEndTurn}
             onAttack={handleAttack}
             onDevour={handleDevour}
+            onGainTrait={handleGainTrait}
           />
         </main>
       </div>

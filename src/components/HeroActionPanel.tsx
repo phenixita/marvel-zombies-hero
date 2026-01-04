@@ -8,12 +8,14 @@ interface HeroActionPanelProps {
   onEndTurn: () => void
   onAttack?: (heroId: string) => void
   onDevour?: (heroId: string) => void
+  onGainTrait?: (heroId: string) => void
   className?: string
 }
 
-export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDevour, className }: HeroActionPanelProps) {
+export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDevour, onGainTrait, className }: HeroActionPanelProps) {
   const isRavenous = hero.hunger >= 4
   const actionsRemaining = hero.availableActions ?? 0
+  const totalActions = hero.level >= 7 ? 4 : 3
   const actionsExhausted = actionsRemaining === 0
 
   const handleAction = (action: 'devour' | 'attack' | 'move' | 'interact' | 'open_door' | 'gain_trait') => {
@@ -27,6 +29,11 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
 
     if (action === 'devour') {
       onDevour?.(hero.id)
+      return
+    }
+
+    if (action === 'gain_trait') {
+      onGainTrait?.(hero.id)
       return
     }
 
@@ -56,7 +63,7 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
             <span className={cn(
               "font-rajdhani font-bold text-2xl",
               actionsExhausted ? "text-muted-foreground" : "text-accent-11"
-            )}>{actionsRemaining}/3</span>
+            )}>{actionsRemaining}/{totalActions}</span>
           </div>
         </div>
 
