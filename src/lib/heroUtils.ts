@@ -66,6 +66,6 @@ export function createHero(name: string): Hero {
     baseAttackValue: 2,
     precision: 3,
     traits: [],
-    availableActions: 3,
+    availableActions: BASE_ACTIONS,
   }
 }
