@@ -9,6 +9,7 @@ import { StartTurnDialog } from '@/components/StartTurnDialog'
 import { useGameDialogs } from '@/hooks/useGameDialogs'
 import { usePersistentState } from '@/hooks/usePersistentState'
 import { Toaster, toast } from 'sonner'
+import { ByStanderEditDialog } from './components/ByStanderEditDialog'
 import { TraitEditDialog } from './components/TraitEditDialog'
 import { GameState } from "./lib/GameState"
 import { Hero } from "./lib/Hero"
@@ -70,6 +71,13 @@ function App() {
     dialogs.openTraitEdit(heroId, traitIndex, hero.traits[traitIndex] || null)
   }
 
+  const handleEditByStander = (heroId: string) => {
+    const hero = gameState?.heroes.find((h) => h.id === heroId)
+    if (!hero) return
+
+    dialogs.openByStanderEdit(heroId, hero.byStander)
+  }
+
   const handleSaveTrait = (trait: Trait) => {
     if (!dialogs.editingTrait) return
 
@@ -87,6 +95,22 @@ function App() {
 
     dialogs.closeTraitEdit()
     toast.success('Trait saved')
+  }
+
+  const handleSaveByStander = (byStander: Trait) => {
+    if (!dialogs.editingByStander) return
+
+    setGameState((current) => ({
+      ...current,
+      heroes: current?.heroes.map((hero) => 
+        hero.id === dialogs.editingByStander!.heroId 
+          ? { ...hero, byStander } 
+          : hero
+      ) || [],
+    }))
+
+    dialogs.closeByStanderEdit()
+    toast.success('Bystander saved')
   }
 
   const handleToggleAutomaticMode = () => {
@@ -389,6 +413,7 @@ function App() {
             heroes={gameState?.heroes || []}
             onUpdateHero={handleUpdateHero}
             onEditTrait={handleEditTrait}
+            onEditByStander={handleEditByStander}
             activeTurnHeroId={gameState?.currentTurn?.heroId}
             playedHeroIds={gameState?.currentRound?.turns.map(t => t.heroId) || []}
             currentTurnPhase={gameState?.currentTurn?.phase}
@@ -405,6 +430,13 @@ function App() {
         onClose={dialogs.closeTraitEdit}
         trait={dialogs.editingTrait?.trait || null}
         onSave={handleSaveTrait}
+      />
+
+      <ByStanderEditDialog
+        open={dialogs.editingByStander !== null}
+        onClose={dialogs.closeByStanderEdit}
+        byStander={dialogs.editingByStander?.byStander || null}
+        onSave={handleSaveByStander}
       />
 
       {dialogs.showInitDialog && (

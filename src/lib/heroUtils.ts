@@ -1,5 +1,5 @@
 import { Hero } from './Hero'
-import { LEVEL_THRESHOLDS, MAX_HEALTH, MIN_HEALTH, MAX_HUNGER, MIN_HUNGER, BASE_ACTIONS, LEVEL_7_ACTIONS, LEVEL_7_THRESHOLD } from './constants'
+import { BASE_ACTIONS, LEVEL_7_ACTIONS, LEVEL_7_THRESHOLD, LEVEL_THRESHOLDS, MAX_HEALTH, MAX_HUNGER, MIN_HEALTH, MIN_HUNGER } from './constants'
 
 /**
  * Utility functions for hero management
@@ -67,5 +67,6 @@ export function createHero(name: string): Hero {
     precision: 3,
     traits: [],
     availableActions: BASE_ACTIONS,
+    byStander: null,
   }
 }

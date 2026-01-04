@@ -14,12 +14,13 @@ interface HeroCardProps {
   hero: Hero
   onUpdateHero: (hero: Hero) => void
   onEditTrait: (traitIndex: number) => void
+  onEditByStander: () => void
   isActiveTurn?: boolean
   hasPlayed?: boolean
   className?: string
 }
 
-export function HeroCard({ hero, onUpdateHero, onEditTrait: onEditTrait, isActiveTurn = false, hasPlayed = false, className }: HeroCardProps) {
+export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isActiveTurn = false, hasPlayed = false, className }: HeroCardProps) {
   // Inline editing hooks
   const nameEdit = useInlineEdit(hero.name, (value) => {
     if (value.trim()) {
@@ -70,6 +71,10 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait: onEditTrait, isActiv
     onUpdateHero({ ...hero, traits: newTraits })
   }
 
+  const handleDeleteByStander = () => {
+    onUpdateHero({ ...hero, byStander: null })
+  }
+
   return (
     <Card
       className={cn(
@@ -81,7 +86,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait: onEditTrait, isActiv
         className
       )}
     >
-      <div className="grid grid-cols-[auto_1fr] gap-6 p-2">
+      <div className="grid grid-cols-[auto_1fr_auto] gap-6 p-2">
         {/* Column 1: Hunger Scale */}
         <div className={cn(
           "row-span-3 flex flex-col items-center justify-center",
@@ -220,6 +225,18 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait: onEditTrait, isActiv
               onDelete={hero.traits[index] ? () => handleDeleteTrait(index) : undefined}
             />
           ))}
+        </div>
+
+        {/* Column 3: ByStander Slot (spans all 3 rows) */}
+        <div className="row-span-3 flex items-center">
+          <TraitSlot
+            trait={hero.byStander}
+            onEdit={onEditByStander}
+            onDelete={hero.byStander ? handleDeleteByStander : undefined}
+            emptyText="Add Bystander"
+            icon="user"
+            className="w-48"
+          />
         </div>
       </div>
     </Card>

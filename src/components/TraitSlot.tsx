@@ -1,16 +1,21 @@
 import { Button } from '@/components/ui/button'
 import { Trait } from "@/lib/Trait"
 import { cn } from '@/lib/utils'
-import { Lightning, PencilSimple, Trash } from '@phosphor-icons/react'
+import { Lightning, PencilSimple, Trash, UserCircle } from '@phosphor-icons/react'
 
 interface TraitSlotProps {
   trait: Trait | null
   onEdit: () => void
   onDelete?: () => void
   className?: string
+  emptyText?: string
+  icon?: 'lightning' | 'user'
 }
 
-export function TraitSlot({ trait, onEdit, onDelete, className }: TraitSlotProps) {
+export function TraitSlot({ trait, onEdit, onDelete, className, emptyText = 'Add Trait', icon = 'lightning' }: TraitSlotProps) {
+  const EmptyIcon = icon === 'user' ? UserCircle : Lightning
+  const FilledIcon = icon === 'user' ? UserCircle : Lightning
+  
   if (!trait) {
     return (
       <button
@@ -23,8 +28,8 @@ export function TraitSlot({ trait, onEdit, onDelete, className }: TraitSlotProps
         )}
       >
         <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground group-hover:text-accent transition-colors">
-          <Lightning weight="regular" className="w-5 h-5" />
-          <span className="text-xs font-medium uppercase tracking-wide">Add Trait</span>
+          <EmptyIcon weight="regular" className="w-5 h-5" />
+          <span className="text-xs font-medium uppercase tracking-wide">{emptyText}</span>
         </div>
       </button>
     )
@@ -39,7 +44,7 @@ export function TraitSlot({ trait, onEdit, onDelete, className }: TraitSlotProps
       )}
     >
       <div className="flex items-start gap-2 mb-2">
-        <Lightning weight="fill" className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+        <FilledIcon weight="fill" className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
         <h3 className="font-rajdhani font-semibold text-sm uppercase tracking-tight text-accent flex-1 leading-tight">
           {trait.title}
         </h3>

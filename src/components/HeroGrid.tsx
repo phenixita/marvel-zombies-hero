@@ -7,6 +7,7 @@ interface HeroGridProps {
   heroes: Hero[]
   onUpdateHero: (hero: Hero) => void
   onEditTrait: (heroId: string, traitIndex: number) => void
+  onEditByStander: (heroId: string) => void
   activeTurnHeroId?: string
   playedHeroIds?: string[]
   currentTurnPhase?: TurnPhase
@@ -16,7 +17,7 @@ interface HeroGridProps {
   onGainTrait?: (heroId: string) => void
 }
 
-export function HeroGrid({ heroes, onUpdateHero, onEditTrait: onEditTrait, activeTurnHeroId, playedHeroIds = [], currentTurnPhase, onEndTurn, onAttack, onDevour, onGainTrait }: HeroGridProps) {
+export function HeroGrid({ heroes, onUpdateHero, onEditTrait, onEditByStander, activeTurnHeroId, playedHeroIds = [], currentTurnPhase, onEndTurn, onAttack, onDevour, onGainTrait }: HeroGridProps) {
   const activeHero = heroes.find(h => h.id === activeTurnHeroId)
 
   return (
@@ -42,6 +43,7 @@ export function HeroGrid({ heroes, onUpdateHero, onEditTrait: onEditTrait, activ
             hero={hero}
             onUpdateHero={onUpdateHero}
             onEditTrait={(traitIndex) => onEditTrait(hero.id, traitIndex)}
+            onEditByStander={() => onEditByStander(hero.id)}
             isActiveTurn={hero.id === activeTurnHeroId}
             hasPlayed={playedHeroIds.includes(hero.id)}
           />

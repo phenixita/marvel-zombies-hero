@@ -11,4 +11,5 @@ export interface Hero {
   precision: number;
   traits: Trait[];
   availableActions: number;
+  byStander: Trait | null;
 }
