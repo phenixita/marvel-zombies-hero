@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { consumeAction } from '@/lib/gameLogic'
+import { consumeAction, restoreAction } from '@/lib/gameLogic'
 import { Hero } from "@/lib/Hero"
 import { getMaxActions, isRavenous } from '@/lib/heroUtils'
 import { cn } from '@/lib/utils'
@@ -13,10 +13,12 @@ interface HeroActionPanelProps {
   onAttack?: (heroId: string) => void
   onDevour?: (heroId: string) => void
   onGainTrait?: (heroId: string) => void
+  onIncrementTurnCounter: (heroId: string) => void
+  onDecrementTurnCounter: (heroId: string) => void
   className?: string
 }
 
-export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDevour, onGainTrait, className }: HeroActionPanelProps) {
+export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDevour, onGainTrait, onIncrementTurnCounter, onDecrementTurnCounter, className }: HeroActionPanelProps) {
   const ravenous = hero ? isRavenous(hero) : false
   const actionsRemaining = hero?.availableActions ?? 0
   const totalActions = hero ? getMaxActions(hero.level) : 0
@@ -25,7 +27,13 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
   const isActionDisabled = actionsExhausted || ravenous || !hero
   const isMoveDisabled = actionsExhausted || !hero
 
-  const handleAction = (action: 'devour' | 'attack' | 'move' | 'interact' | 'open_door' | 'gain_trait') => {
+  const handleAction = (action: 'devour' | 'attack' | 'move' | 'interact' | 'open_door' | 'gain_trait' | 'increment_turn_counter' | 'decrement_turn_counter') => {
+    
+    if (action === 'increment_turn_counter') {
+      onUpdateHero(restoreAction(hero!))
+      return
+    }
+
     if (actionsRemaining <= 0) return
 
     if (action === 'attack') {
@@ -100,6 +108,15 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
           </Button>
           <Button
             size="sm"
+            variant="link"
+            className={actionButtonClassName}
+            disabled={actionsRemaining >= totalActions || !hero}
+            onClick={() => handleAction('increment_turn_counter')}
+          >
+            Add action
+          </Button>
+          <Button
+            size="sm"
             variant="secondary"
             className={actionButtonClassName}
             disabled={isActionDisabled}
@@ -124,6 +141,15 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
             onClick={() => handleAction('interact')}
           >
             Interact
+          </Button>
+          <Button
+            size="sm"
+            variant="link"
+            className={actionButtonClassName}
+            disabled={actionsRemaining <= 0 || !hero }
+            onClick={() => handleAction('decrement_turn_counter')}
+          >
+            Remove action
           </Button>
         </div>
 

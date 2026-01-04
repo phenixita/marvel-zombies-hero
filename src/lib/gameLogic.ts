@@ -1,8 +1,8 @@
 import { Hero } from './Hero'
 import { Round } from './Round'
 import { Turn } from './Turn'
-import { getMaxActions, clampHunger, clampHealth } from './heroUtils'
 import { MAX_HUNGER } from './constants'
+import { clampHealth, clampHunger, getMaxActions } from './heroUtils'
 
 /**
  * Game logic utilities for turn and round management
@@ -107,5 +107,12 @@ export function consumeAction(hero: Hero): Hero {
   return {
     ...hero,
     availableActions: Math.max(0, hero.availableActions - 1),
+  }
+}
+
+export function restoreAction(hero: Hero): Hero {
+  return {
+    ...hero,
+    availableActions: Math.min(getMaxActions(hero.level), hero.availableActions + 1),
   }
 }
