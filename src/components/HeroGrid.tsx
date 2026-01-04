@@ -21,7 +21,7 @@ export function HeroGrid({ heroes, onUpdateHero, onEditTrait: onEditTrait, activ
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 gap-2">
 
 
         <div className="sticky bottom-4 z-50 mt-auto">

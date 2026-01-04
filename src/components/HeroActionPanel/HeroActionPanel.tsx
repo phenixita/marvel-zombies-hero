@@ -50,7 +50,7 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
     <div className={cn(
       containerClassName,
       className
-    )}> 
+    )}>
       <div className={layoutClassName}>
         <div className={headerClassName}>
           <div className={infoClassName}>
