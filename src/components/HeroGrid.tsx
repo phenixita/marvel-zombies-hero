@@ -23,19 +23,9 @@ export function HeroGrid({ heroes, onUpdateHero, onEditTrait: onEditTrait, activ
   return (
     <div className="flex flex-col gap-2">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
-        {heroes.map((hero) => (
-          <HeroCard
-            key={hero.id}
-            hero={hero}
-            onUpdateHero={onUpdateHero}
-            onEditTrait={(traitIndex) => onEditTrait(hero.id, traitIndex)}
-            isActiveTurn={hero.id === activeTurnHeroId}
-            hasPlayed={playedHeroIds.includes(hero.id)}
-          />
-        ))}
-      </div>
-
-      {showActionPanel && (
+        
+        
+          {showActionPanel && (
         <div className="sticky bottom-4 z-50 mt-auto">
           <HeroActionPanel
             hero={activeHero}
@@ -48,6 +38,20 @@ export function HeroGrid({ heroes, onUpdateHero, onEditTrait: onEditTrait, activ
           />
         </div>
       )}
+        
+        {heroes.map((hero) => (
+          <HeroCard
+            key={hero.id}
+            hero={hero}
+            onUpdateHero={onUpdateHero}
+            onEditTrait={(traitIndex) => onEditTrait(hero.id, traitIndex)}
+            isActiveTurn={hero.id === activeTurnHeroId}
+            hasPlayed={playedHeroIds.includes(hero.id)}
+          />
+        ))}
+      </div>
+
+    
     </div>
   )
 }

@@ -6,7 +6,6 @@ import { HeroGrid } from '@/components/HeroGrid'
 import { KeyboardShortcuts } from '@/components/KeyboardShortcuts'
 import { PhaseConfirmationDialog } from '@/components/PhaseConfirmationDialog'
 import { StartTurnDialog } from '@/components/StartTurnDialog'
-import { TurnTrackerSidebar } from '@/components/TurnTrackerSidebar'
 import { useGameDialogs } from '@/hooks/useGameDialogs'
 import { usePersistentState } from '@/hooks/usePersistentState'
 import { Toaster, toast } from 'sonner'
@@ -383,7 +382,6 @@ function App() {
       </header>
 
       <div className="flex flex-1">
-        <TurnTrackerSidebar gameState={gameState} onUpdateHero={handleUpdateHero} />
 
         <main className="flex-1 container mx-auto px-4 py-8">
           <HeroGrid
