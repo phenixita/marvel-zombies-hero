@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button'
-import { Hero } from "@/lib/Hero"
-import { cn } from '@/lib/utils'
-import { isRavenous, getMaxActions } from '@/lib/heroUtils'
 import { consumeAction } from '@/lib/gameLogic'
+import { Hero } from "@/lib/Hero"
+import { getMaxActions, isRavenous } from '@/lib/heroUtils'
+import { cn } from '@/lib/utils'
 
 interface HeroActionPanelProps {
   hero: Hero
@@ -53,6 +53,7 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
           <div className="flex flex-col">
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Active Hero</span>
             <span className="font-rajdhani font-bold text-xl text-accent-11 uppercase">{hero.name}</span>
+            {ravenous && (<span className="text-xs text-red-500 font-bold mt-1 uppercase">Ravenous!</span>)}
           </div>
           
           <div className="h-10 w-[2px] bg-border hidden md:block" />
@@ -66,11 +67,7 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
           </div>
         </div>
 
-        {ravenous && (
-          <div className="bg-destructive/20 px-3 py-1 rounded border border-destructive/30 text-xs text-destructive font-bold uppercase tracking-tighter animate-pulse">
-            Ravenous - Only Devour allowed!
-          </div>
-        )}
+        
 
         <div className="flex-1 grid grid-cols-3 sm:grid-cols-6 gap-2 w-full">
           <Button
