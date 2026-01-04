@@ -16,14 +16,10 @@ interface HeroCardProps {
   onUpdateHero: (hero: Hero) => void
   onEditPower: (powerIndex: number) => void
   isActiveTurn?: boolean
-  currentTurnPhase?: TurnPhase
-  onEndTurn: () => void
-  onAttack?: (heroId: string) => void
-  onDevour?: (heroId: string) => void
   className?: string
 }
 
-export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false, currentTurnPhase, onEndTurn, onAttack, onDevour, className }: HeroCardProps) {
+export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false, className }: HeroCardProps) {
   const [isEditingName, setIsEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(hero.name)
   const [isEditingBaseAttack, setIsEditingBaseAttack] = useState(false)
@@ -71,29 +67,6 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
     onUpdateHero({ ...hero, powers: newPowers })
   }
 
-  const handleAction = (action: 'devour' | 'attack' | 'move' | 'interact' | 'open_door' | 'gain_trait') => {
-    const currentActions = hero.availableActions ?? 0
-    if (currentActions <= 0) return
-
-    // Special actions that open dialogs
-    if (action === 'attack') {
-      onAttack?.(hero.id)
-      return
-    }
-
-    if (action === 'devour') {
-      onDevour?.(hero.id)
-      return
-    }
-
-    // Generic actions simply consume an action
-    const updates: Partial<Hero> = {
-      availableActions: Math.max(0, currentActions - 1)
-    }
-
-    onUpdateHero({ ...hero, ...updates })
-  }
-
   const getLevelColor = (level: number): string => {
     if (level <= 6) return 'bg-blue-500'
     if (level <= 21) return 'bg-yellow-500'
@@ -109,9 +82,6 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
   }
 
   const isRavenous = hero.hunger >= 4
-  const isInActionsPhase = isActiveTurn && currentTurnPhase === 'ACTIONS'
-  const actionsRemaining = hero.availableActions ?? 0
-  const actionsExhausted = actionsRemaining === 0
 
   return (
     <Card
@@ -239,91 +209,6 @@ export function HeroCard({ hero, onUpdateHero, onEditPower, isActiveTurn = false
             maxHealth={5}
             onChange={handleHealthChange}
           />
-
-          {isInActionsPhase && (
-            <div className="bg-accent/10 p-3 rounded-md border border-accent/20 space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-              <div className="flex items-center justify-between text-sm font-medium text-accent-11">
-                <span className="uppercase tracking-wider text-xs">Actions Available</span>
-                <span className={cn(
-                  "font-rajdhani font-bold text-xl",
-                  actionsExhausted && "text-muted-foreground"
-                )}>{actionsRemaining}/3</span>
-              </div>
-
-              {isRavenous && (
-                <div className="bg-destructive/20 px-2 py-1 rounded text-xs text-destructive font-medium text-center border border-destructive/30">
-                  RAVENOUS - Only Devour allowed!
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 gap-2">
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
-                  disabled={actionsExhausted || isRavenous}
-                  onClick={() => handleAction('move')}
-                >
-                  Move
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
-                  disabled={actionsExhausted || isRavenous}
-                  onClick={() => handleAction('attack')}
-                >
-                  Attack
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
-                  disabled={actionsExhausted}
-                  onClick={() => handleAction('devour')}
-                >
-                  Devour
-                </Button>
-
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
-                  disabled={actionsExhausted || isRavenous}
-                  onClick={() => handleAction('open_door')}
-                >
-                  Open Door
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
-                  disabled={actionsExhausted || isRavenous}
-                  onClick={() => handleAction('gain_trait')}
-                >
-                  Gain Trait
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="h-8 text-[10px] sm:text-xs uppercase font-bold tracking-tight"
-                  disabled={actionsExhausted || isRavenous}
-                  onClick={() => handleAction('interact')}
-                >
-                  Interact
-                </Button>
-
-              </div>
-
-              <Button
-                variant="default"
-                className="w-full mt-2 font-rajdhani font-bold uppercase"
-                onClick={onEndTurn}
-              >
-                End Turn
-              </Button>
-            </div>
-          )}
 
           <div className="grid grid-cols-2 gap-3 pt-2">
             {Array.from({ length: 4 }).map((_, index) => (
