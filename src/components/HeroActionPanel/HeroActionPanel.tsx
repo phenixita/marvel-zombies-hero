@@ -23,6 +23,7 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
   const actionsExhausted = actionsRemaining === 0
 
   const isActionDisabled = actionsExhausted || ravenous || !hero
+  const isMoveDisabled = actionsExhausted || !hero
 
   const handleAction = (action: 'devour' | 'attack' | 'move' | 'interact' | 'open_door' | 'gain_trait') => {
     if (actionsRemaining <= 0) return
@@ -74,7 +75,7 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
             size="sm"
             variant="secondary"
             className={actionButtonClassName}
-            disabled={isActionDisabled}
+            disabled={isMoveDisabled}
             onClick={() => handleAction('move')}
           >
             Move
