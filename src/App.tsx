@@ -7,25 +7,24 @@ import { KeyboardShortcuts } from '@/components/KeyboardShortcuts'
 import { PhaseConfirmationDialog } from '@/components/PhaseConfirmationDialog'
 import { StartTurnDialog } from '@/components/StartTurnDialog'
 import { TurnTrackerSidebar } from '@/components/TurnTrackerSidebar'
-import { TraitEditDialog } from './components/TraitEditDialog'
-import { usePersistentState } from '@/hooks/usePersistentState'
 import { useGameDialogs } from '@/hooks/useGameDialogs'
-import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
+import { usePersistentState } from '@/hooks/usePersistentState'
+import { Toaster, toast } from 'sonner'
+import { TraitEditDialog } from './components/TraitEditDialog'
 import { GameState } from "./lib/GameState"
 import { Hero } from "./lib/Hero"
 import { Trait } from "./lib/Trait"
-import { createHero, clampHunger } from './lib/heroUtils'
-import { 
-  getAvailableHeroes, 
-  createTurn, 
-  createRound, 
-  shouldStartNewRound,
-  processStartPhase,
+import {
+  consumeAction,
+  createRound,
+  createTurn,
+  getAvailableHeroes,
   processEndPhase,
+  processStartPhase,
   resetHeroActions,
-  consumeAction
+  shouldStartNewRound
 } from './lib/gameLogic'
-import { Toaster, toast } from 'sonner'
+import { clampHunger, createHero } from './lib/heroUtils'
 
 function App() {
   const [gameState, setGameState] = usePersistentState<GameState>(
@@ -39,12 +38,7 @@ function App() {
   // Use custom hooks for dialog management
   const dialogs = useGameDialogs()
 
-  // Use keyboard shortcuts hook
-  useKeyboardShortcuts({
-    onNewGame: dialogs.openInitDialog,
-    onShowKeyboardHelp: dialogs.openKeyboardHelp,
-    onStartTurn: triggerStartTurn,
-  })
+ 
 
   const handleStartNewGame = (heroCount: number) => {
     const newHeroes: Hero[] = Array.from({ length: heroCount }).map((_, index) => 
