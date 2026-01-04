@@ -2,7 +2,7 @@ import { Hero } from './Hero'
 import { Round } from './Round'
 import { Turn } from './Turn'
 import { getMaxActions, clampHunger, clampHealth } from './heroUtils'
-import { RAVENOUS_HUNGER_LEVEL } from './constants'
+import { MAX_HUNGER } from './constants'
 
 /**
  * Game logic utilities for turn and round management
@@ -79,7 +79,7 @@ export function processEndPhase(hero: Hero): {
   isGameOver: boolean
   wasRavenous: boolean
 } {
-  const wasRavenous = hero.hunger >= RAVENOUS_HUNGER_LEVEL
+  const wasRavenous = hero.hunger >= MAX_HUNGER
   
   if (wasRavenous) {
     const newHealth = clampHealth(hero.health - 1)

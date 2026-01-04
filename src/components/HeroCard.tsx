@@ -31,14 +31,20 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait: onEditTrait, isActiv
   const baseAttackEdit = useInlineEdit(hero.baseAttackValue, (value) => {
     onUpdateHero({ ...hero, baseAttackValue: value })
   }, {
-    validator: (val) => !isNaN(parseInt(val)) && parseInt(val) >= 0,
+    validator: (val) => {
+      const parsed = parseInt(val)
+      return !isNaN(parsed) && parsed >= 0
+    },
     parser: (val) => parseInt(val)
   })
 
   const precisionEdit = useInlineEdit(hero.precision, (value) => {
     onUpdateHero({ ...hero, precision: value })
   }, {
-    validator: (val) => !isNaN(parseInt(val)) && parseInt(val) >= 1 && parseInt(val) <= 6,
+    validator: (val) => {
+      const parsed = parseInt(val)
+      return !isNaN(parsed) && parsed >= 1 && parsed <= 6
+    },
     parser: (val) => parseInt(val)
   })
 

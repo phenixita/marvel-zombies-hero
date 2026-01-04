@@ -20,9 +20,3 @@ export const LEVEL_THRESHOLDS = {
 export const BASE_ACTIONS = 3
 export const LEVEL_7_ACTIONS = 4
 export const LEVEL_7_THRESHOLD = 7
-
-// Ravenous threshold
-export const RAVENOUS_HUNGER_LEVEL = 4
-
-// Trait slots
-export const MAX_TRAIT_SLOTS = 2

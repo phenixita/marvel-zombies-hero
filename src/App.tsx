@@ -291,9 +291,12 @@ function App() {
       ...current,
       heroes: current?.heroes.map(h => {
         if (h.id === heroId) {
-          const newHunger = clampHunger(h.hunger + hungerGained)
-          const newLevel = h.level + enemiesDefeated
-          return { ...h, hunger: newHunger, level: newLevel, ...consumeAction(h) }
+          const updatedHero = { 
+            ...h, 
+            hunger: clampHunger(h.hunger + hungerGained), 
+            level: h.level + enemiesDefeated 
+          }
+          return consumeAction(updatedHero)
         }
         return h
       }) || [],
@@ -310,8 +313,11 @@ function App() {
       ...current,
       heroes: current?.heroes.map(h => {
         if (h.id === heroId) {
-          const newHunger = wasSuccessful ? 0 : clampHunger(h.hunger + hungerGained)
-          return { ...h, hunger: newHunger, ...consumeAction(h) }
+          const updatedHero = { 
+            ...h, 
+            hunger: wasSuccessful ? 0 : clampHunger(h.hunger + hungerGained) 
+          }
+          return consumeAction(updatedHero)
         }
         return h
       }) || [],

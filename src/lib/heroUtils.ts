@@ -1,5 +1,5 @@
 import { Hero } from './Hero'
-import { LEVEL_THRESHOLDS, MAX_HEALTH, MIN_HEALTH, MAX_HUNGER, MIN_HUNGER } from './constants'
+import { LEVEL_THRESHOLDS, MAX_HEALTH, MIN_HEALTH, MAX_HUNGER, MIN_HUNGER, BASE_ACTIONS, LEVEL_7_ACTIONS, LEVEL_7_THRESHOLD } from './constants'
 
 /**
  * Utility functions for hero management
@@ -50,7 +50,7 @@ export function isRavenous(hero: Hero): boolean {
  * Get the number of available actions for a hero based on level
  */
 export function getMaxActions(level: number): number {
-  return level >= 7 ? 4 : 3
+  return level >= LEVEL_7_THRESHOLD ? LEVEL_7_ACTIONS : BASE_ACTIONS
 }
 
 /**

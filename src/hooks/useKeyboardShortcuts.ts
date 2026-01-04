@@ -8,28 +8,30 @@ export function useKeyboardShortcuts(handlers: {
   onShowKeyboardHelp: () => void
   onStartTurn: () => void
 }) {
+  const { onNewGame, onShowKeyboardHelp, onStartTurn } = handlers
+  
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Cmd/Ctrl+N - New Game
       if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
         e.preventDefault()
-        handlers.onNewGame()
+        onNewGame()
       }
       
       // Cmd/Ctrl+K - Show Keyboard Help
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
-        handlers.onShowKeyboardHelp()
+        onShowKeyboardHelp()
       }
       
       // Cmd/Ctrl+T - Start Turn
       if ((e.metaKey || e.ctrlKey) && e.key === 't') {
         e.preventDefault()
-        handlers.onStartTurn()
+        onStartTurn()
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handlers])
+  }, [onNewGame, onShowKeyboardHelp, onStartTurn])
 }
