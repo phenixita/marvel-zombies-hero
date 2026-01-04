@@ -1,37 +1,39 @@
 import { Button } from '@/components/ui/button'
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Hero } from "@/lib/Hero"
+import { cn } from '@/lib/utils'
+import { CheckCircle, Crosshair, Skull } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 
 interface DevourDialogProps {
   open: boolean
   hero: Hero | null
-  onComplete: (heroId: string, hungerGained: number, wasSuccessful: boolean) => void
+  onComplete: (heroId: string, hungerGained: number, wasSuccessful: boolean, enemiesDevoured: number) => void
   onClose: () => void
 }
 
-type DevourStep = 'DICE_COUNT' | 'SUCCESS_CONFIRMATION' | 'HUNGER_RESULTS' | 'COMPLETE'
+type DevourStep = 'DICE_COUNT' | 'ROLL_RESULTS' | 'ENEMIES_DEVOURED' | 'COMPLETE'
 
 export function DevourDialog({ open, hero, onComplete, onClose }: DevourDialogProps) {
   const [step, setStep] = useState<DevourStep>('DICE_COUNT')
-  const [diceCount, setDiceCount] = useState('')
-  const [wasSuccessful, setWasSuccessful] = useState<boolean | null>(null)
-  const [hungerResults, setHungerResults] = useState('')
+  const [diceCount, setDiceCount] = useState('0')
+  const [rollResults, setRollResults] = useState<number[]>([])
+  const [enemiesDevoured, setEnemiesDevoured] = useState('')
 
   // Reset state when dialog opens
   useEffect(() => {
     if (open && hero) {
       const defaultDiceCount = hero.hunger + 1
       setDiceCount(defaultDiceCount.toString())
-      setWasSuccessful(null)
-      setHungerResults('')
+      setRollResults([])
+      setEnemiesDevoured('')
       setStep('DICE_COUNT')
     }
   }, [open, hero])
@@ -39,43 +41,38 @@ export function DevourDialog({ open, hero, onComplete, onClose }: DevourDialogPr
   const handleDiceCountSubmit = () => {
     const dice = parseInt(diceCount)
     if (isNaN(dice) || dice < 0) return
-    
-    setTimeout(() => setStep('SUCCESS_CONFIRMATION'), 150)
+
+    const randomValues = new Uint32Array(dice)
+    crypto.getRandomValues(randomValues)
+    const results = Array.from(randomValues).map(val => (val % 6) + 1)
+
+    setRollResults(results)
+    setStep('ROLL_RESULTS')
   }
 
-  const handleSuccessConfirmation = (success: boolean) => {
-    setWasSuccessful(success)
-    
-    if (success) {
-      // If successful, skip hunger results and go directly to complete
-      setStep('COMPLETE')
-      setTimeout(() => {
-        if (hero) {
-          onComplete(hero.id, 0, true) // 0 hunger gained when successful
-        }
-      }, 150)
+  const handleConfirmRoll = () => {
+    const successCount = rollResults.filter(r => r >= 4).length
+
+    if (successCount > 0) {
+      setStep('ENEMIES_DEVOURED')
     } else {
-      // If failed, ask for hunger results
-      setTimeout(() => setStep('HUNGER_RESULTS'), 150)
+      handleComplete(false, 0)
     }
   }
 
-  const handleHungerResultsSubmit = () => {
-    const hunger = parseInt(hungerResults)
-    const dice = parseInt(diceCount)
-    
-    // Validate: hunger results cannot exceed dice count
-    if (isNaN(hunger) || hunger < 0 || hunger > dice) {
-      return
-    }
-    
+  const handleComplete = (wasSuccessful: boolean, devouredCount?: number) => {
+    if (!hero) return
+
+    const hunger = rollResults.filter(r => r === 1).length
+    const parsedDevoured = parseInt(enemiesDevoured)
+    const finalDevoured = wasSuccessful
+      ? (devouredCount ?? (isNaN(parsedDevoured) ? 0 : parsedDevoured))
+      : 0
+
     setStep('COMPLETE')
-    
-    // Complete the devour (failed)
+
     setTimeout(() => {
-      if (hero) {
-        onComplete(hero.id, hunger, false)
-      }
+      onComplete(hero.id, wasSuccessful ? 0 : hunger, wasSuccessful, finalDevoured)
     }, 150)
   }
 
@@ -92,8 +89,12 @@ export function DevourDialog({ open, hero, onComplete, onClose }: DevourDialogPr
 
   if (!hero) return null
 
-  const totalDice = parseInt(diceCount) || 0
-  const hungerCount = parseInt(hungerResults) || 0
+  const hungerCount = rollResults.filter(r => r === 1).length
+  const successCount = rollResults.filter(r => r >= 4).length
+  const isValidDevourCount = enemiesDevoured !== '' &&
+    !isNaN(parseInt(enemiesDevoured)) &&
+    parseInt(enemiesDevoured) >= 0 &&
+    parseInt(enemiesDevoured) <= successCount
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -104,8 +105,8 @@ export function DevourDialog({ open, hero, onComplete, onClose }: DevourDialogPr
           </DialogTitle>
           <DialogDescription>
             {step === 'DICE_COUNT' && 'Enter the number of dice to roll'}
-            {step === 'SUCCESS_CONFIRMATION' && 'Was the devour successful?'}
-            {step === 'HUNGER_RESULTS' && 'How many hunger symbols (⚡) appeared?'}
+            {step === 'ROLL_RESULTS' && 'Review the devour results'}
+            {step === 'ENEMIES_DEVOURED' && 'How many enemies were devoured?'}
             {step === 'COMPLETE' && 'Devour complete!'}
           </DialogDescription>
         </DialogHeader>
@@ -119,22 +120,12 @@ export function DevourDialog({ open, hero, onComplete, onClose }: DevourDialogPr
                   <span className="text-muted-foreground">Current Hunger:</span>
                   <span className="font-rajdhani font-bold">{hero.hunger}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Base Attack:</span>
-                  <span className="font-rajdhani font-bold">{hero.baseAttackValue}</span>
-                </div>
                 <div className="flex justify-between border-t border-border pt-1 mt-1">
-                  <span className="text-foreground font-medium">Dice to Roll:</span>
-                  <span className="font-rajdhani font-bold text-accent-11">
-                    {hero.hunger + 1}
+                  <span className="text-foreground font-medium">Dice to Roll (Hunger + 1):</span>
+                  <span className="font-rajdhani font-bold text-accent-11 text-3xl">
+                    {hero.hunger} + 1 = {hero.hunger + 1}
                   </span>
                 </div>
-              </div>
-
-              <div className="bg-accent/10 p-3 rounded-lg border border-accent/20">
-                <p className="text-xs text-accent-11 font-medium">
-                  💡 Devour uses Base Attack dice + Hunger dice + 1 bonus die
-                </p>
               </div>
 
               <div className="space-y-2">
@@ -160,117 +151,117 @@ export function DevourDialog({ open, hero, onComplete, onClose }: DevourDialogPr
             </div>
           )}
 
-          {/* Step 2: Success Confirmation */}
-          {step === 'SUCCESS_CONFIRMATION' && (
-            <div className="space-y-3">
-              <div className="bg-muted/50 p-3 rounded-lg text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Dice Rolled:</span>
-                  <span className="font-rajdhani font-bold">{totalDice}</span>
+          {/* Step 2: Roll Results */}
+          {step === 'ROLL_RESULTS' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-5 gap-2 max-h-[200px] overflow-y-auto p-1">
+                {rollResults.map((result, index) => {
+                    const isHunger = result === 1
+                    const isSuccess = result >= 4
+
+                    return (
+                        <div 
+                            key={index}
+                            className={cn(
+                                "aspect-square flex items-center justify-center rounded-md border-2 text-xl font-rajdhani font-bold",
+                                isHunger ? "border-destructive bg-destructive/10 text-destructive" : 
+                                isSuccess ? "border-green-500 bg-green-500/10 text-green-500" :
+                                "border-muted bg-muted/30 text-muted-foreground"
+                            )}
+                        >
+                            {isHunger ? '⚡' : result}
+                        </div>
+                    )
+                })}
+              </div>
+
+              <div className="bg-muted/50 p-3 rounded-lg text-sm space-y-2">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Skull className="text-destructive" weight="fill" />
+                        <span className="text-muted-foreground">Hunger Gained:</span>
+                    </div>
+                    <span className="font-rajdhani font-bold text-destructive text-lg">{hungerCount}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Crosshair className="text-foreground" />
+                        <span className="text-muted-foreground">Total Dice:</span>
+                    </div>
+                    <span className="font-rajdhani font-bold text-lg">{rollResults.length}</span>
+                </div>
+                <div className="flex items-center justify-between border-t border-border pt-2">
+                    <div className="flex items-center gap-2">
+                        <CheckCircle className="text-green-500" weight="fill" />
+                        <span className="text-foreground font-medium">Valid Successes:</span>
+                    </div>
+                    <span className="font-rajdhani font-bold text-green-500 text-xl">{successCount}</span>
+                </div>
+                <div className="text-xs text-muted-foreground text-center pt-1">
+                    (Success on 4+)
                 </div>
               </div>
 
-              <div className="bg-destructive/10 p-4 rounded-lg border border-destructive/20 space-y-3">
-                <h4 className="font-rajdhani font-bold text-sm uppercase tracking-wide text-destructive">
-                  Target Priority Rules
-                </h4>
-                <ol className="text-xs space-y-1">
-                  <li className="flex items-start gap-2">
-                    <span className="font-rajdhani font-bold text-destructive min-w-[16px]">1.</span>
-                    <span>Superhero</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="font-rajdhani font-bold text-destructive min-w-[16px]">2.</span>
-                    <span>Guard</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="font-rajdhani font-bold text-destructive min-w-[16px]">3.</span>
-                    <span>Soldier</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="font-rajdhani font-bold text-destructive min-w-[16px]">4.</span>
-                    <span>Specialist</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="font-rajdhani font-bold text-destructive min-w-[16px]">5.</span>
-                    <span className="font-medium">Bystander (Devour only)</span>
-                  </li>
-                </ol>
-                <div className="bg-destructive/20 px-2 py-1.5 rounded text-xs font-medium text-center border border-destructive/30">
-                  ⚠️ Only ONE target eliminated per Devour
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Was the devour successful?</label>
-                <div className="grid grid-cols-2 gap-3">
+              <div className="flex gap-2">
                   <Button
-                    onClick={() => handleSuccessConfirmation(true)}
-                    className="font-rajdhani font-bold uppercase h-12"
-                    variant="default"
+                    variant="outline"
+                    onClick={() => setStep('DICE_COUNT')}
+                    className="flex-1"
                   >
-                    Yes (Success)
+                    Re-roll
                   </Button>
                   <Button
-                    onClick={() => handleSuccessConfirmation(false)}
-                    className="font-rajdhani font-bold uppercase h-12"
-                    variant="destructive"
+                    onClick={handleConfirmRoll}
+                    className="flex-[2] font-rajdhani font-bold uppercase"
                   >
-                    No (Failed)
+                    Confirm Results
                   </Button>
-                </div>
               </div>
             </div>
           )}
 
-          {/* Step 3: Hunger Results (only if failed) */}
-          {step === 'HUNGER_RESULTS' && (
-            <div className="space-y-3">
-              <div className="bg-muted/50 p-3 rounded-lg text-sm space-y-1">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Dice Rolled:</span>
-                  <span className="font-rajdhani font-bold">{totalDice}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Result:</span>
-                  <span className="font-rajdhani font-bold text-destructive">Failed</span>
-                </div>
-              </div>
-
-              <div className="bg-destructive/10 p-3 rounded-lg border border-destructive/20">
-                <p className="text-xs text-destructive font-medium">
-                  ⚠️ Devour failed - You must add hunger symbols to your hunger track
-                </p>
+          {/* Step 3: Enemies Devoured */}
+          {step === 'ENEMIES_DEVOURED' && (
+            <div className="space-y-4">
+              <div className="bg-muted/50 p-4 rounded-lg text-center space-y-2">
+                <div className="text-sm text-muted-foreground uppercase tracking-wider">Successes Available</div>
+                <div className="text-4xl font-rajdhani font-bold text-green-500">{successCount}</div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Hunger Symbols (⚡)</label>
+                <label className="text-sm font-medium">Enemies Devoured</label>
                 <Input
                   type="number"
                   min="0"
-                  max={totalDice}
-                  value={hungerResults}
-                  onChange={(e) => setHungerResults(e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(e, handleHungerResultsSubmit)}
+                  max={successCount}
+                  placeholder="Enter amount..."
+                  value={enemiesDevoured}
+                  onChange={(e) => setEnemiesDevoured(e.target.value)}
+                  onKeyDown={(e) => isValidDevourCount && handleKeyDown(e, () => handleComplete(true))}
                   autoFocus
-                  className="text-lg font-rajdhani font-bold text-center"
+                  className="text-2xl font-rajdhani font-bold text-center h-16"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Current hunger: {hero.hunger}/4 → Will become: {Math.min(4, hero.hunger + hungerCount)}/4
+                <p className="text-xs text-muted-foreground text-center">
+                  Cannot exceed {successCount} successes
                 </p>
               </div>
 
-              <Button
-                onClick={handleHungerResultsSubmit}
-                className="w-full font-rajdhani font-bold uppercase"
-                disabled={
-                  !hungerResults || 
-                  parseInt(hungerResults) < 0 || 
-                  parseInt(hungerResults) > totalDice
-                }
-              >
-                Complete Devour
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setStep('ROLL_RESULTS')}
+                  className="flex-1"
+                >
+                  Back
+                </Button>
+                <Button
+                  onClick={() => handleComplete(true)}
+                  disabled={!isValidDevourCount}
+                  className="flex-[2] font-rajdhani font-bold uppercase"
+                >
+                  Finish Devour
+                </Button>
+              </div>
             </div>
           )}
         </div>

@@ -301,14 +301,15 @@ function App() {
     dialogs.openDevourDialog(heroId)
   }
 
-  const handleDevourComplete = (heroId: string, hungerGained: number, wasSuccessful: boolean) => {
+  const handleDevourComplete = (heroId: string, hungerGained: number, wasSuccessful: boolean, enemiesDevoured: number) => {
     setGameState((current) => ({
       ...current,
       heroes: current?.heroes.map(h => {
         if (h.id === heroId) {
           const updatedHero = { 
             ...h, 
-            hunger: wasSuccessful ? 0 : clampHunger(h.hunger + hungerGained) 
+            hunger: wasSuccessful ? 0 : clampHunger(h.hunger + hungerGained),
+            level: h.level + enemiesDevoured,
           }
           return consumeAction(updatedHero)
         }
