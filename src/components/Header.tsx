@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { KeyboardIcon, Plus } from 'lucide-react'
-import { Play } from '@phosphor-icons/react'
+import { Play, ArrowCounterClockwise, ArrowClockwise } from '@phosphor-icons/react'
 
 interface HeaderProps {
     onShowKeyboardHelp: () => void
@@ -10,9 +10,23 @@ interface HeaderProps {
     onStartTurn: () => void
     isAutomaticMode: boolean
     onToggleAutomaticMode: () => void
+    canUndo: boolean
+    canRedo: boolean
+    onUndo: () => void
+    onRedo: () => void
 }
 
-export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomaticMode, onToggleAutomaticMode }: HeaderProps) {
+export function Header({ 
+    onShowKeyboardHelp, 
+    onNewGame, 
+    onStartTurn, 
+    isAutomaticMode, 
+    onToggleAutomaticMode,
+    canUndo,
+    canRedo,
+    onUndo,
+    onRedo
+}: HeaderProps) {
     return (
             <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                 <div>
@@ -24,12 +38,30 @@ export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomatic
 
                 <div className="flex items-center gap-4">
                     {/* Action Panel */}
-                    <div className="flex items-center gap-4 border-l border-border pl-4">
+                    <div className="flex items-center gap-2 border-l border-border pl-4">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={onUndo}
+                            disabled={!canUndo}
+                            title="Undo (Ctrl/Cmd+Z)"
+                        >
+                            <ArrowCounterClockwise className="w-5 h-5" weight="bold" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={onRedo}
+                            disabled={!canRedo}
+                            title="Redo (Ctrl/Cmd+Shift+Z)"
+                        >
+                            <ArrowClockwise className="w-5 h-5" weight="bold" />
+                        </Button>
                         <Button
                             variant="default"
                             onClick={onStartTurn}
                             title="Start Turn (Ctrl/Cmd+T)"
-                            className="gap-2"
+                            className="gap-2 ml-2"
                         >
                             <Play className="w-4 h-4" weight="fill" />
                             Start Turn

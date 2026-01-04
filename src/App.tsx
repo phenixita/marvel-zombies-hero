@@ -7,11 +7,12 @@ import { KeyboardShortcuts } from '@/components/KeyboardShortcuts'
 import { PhaseConfirmationDialog } from '@/components/PhaseConfirmationDialog'
 import { StartTurnDialog } from '@/components/StartTurnDialog'
 import { useGameDialogs } from '@/hooks/useGameDialogs'
-import { usePersistentState } from '@/hooks/usePersistentState'
+import { useEventHistory } from '@/hooks/useEventHistory'
 import { Toaster, toast } from 'sonner'
 import { ByStanderEditDialog } from './components/ByStanderEditDialog'
 import { TraitEditDialog } from './components/TraitEditDialog'
 import { GameState } from "./lib/GameState"
+import { GameEventType } from "./lib/GameEvent"
 import { Hero } from "./lib/Hero"
 import { Trait } from "./lib/Trait"
 import {
@@ -27,16 +28,31 @@ import {
 import { clampHunger, createHero } from './lib/heroUtils'
 
 function App() {
-  const [gameState, setGameState] = usePersistentState<GameState>(
-    'marvel-zombies-game',
-    {
-      heroes: [],
-      isAutomaticMode: false,
-    }
-  )
+  const { 
+    state: gameState, 
+    canUndo, 
+    canRedo, 
+    undo, 
+    redo, 
+    recordEvent,
+    clearHistory 
+  } = useEventHistory({
+    heroes: [],
+    isAutomaticMode: false,
+  })
 
   // Use custom hooks for dialog management
   const dialogs = useGameDialogs()
+
+  // Helper to update state with event recording
+  const updateStateWithEvent = (
+    type: GameEventType, 
+    description: string, 
+    updateFn: (current: GameState) => GameState
+  ) => {
+    const newState = updateFn(gameState)
+    recordEvent(type, description, newState)
+  }
 
  
 
@@ -45,9 +61,13 @@ function App() {
       createHero(`Hero ${index + 1}`)
     )
 
-    setGameState({
+    const newState: GameState = {
       heroes: newHeroes,
-    })
+      isAutomaticMode: false,
+    }
+    
+    recordEvent('GAME_INIT', `New game with ${heroCount} hero${heroCount > 1 ? 'es' : ''}`, newState)
+    clearHistory() // Clear history when starting a new game
 
     dialogs.closeInitDialog()
     toast.success(`Game initialized with ${heroCount} hero${heroCount > 1 ? 'es' : ''}`)
@@ -58,10 +78,14 @@ function App() {
   }
 
   const handleUpdateHero = (updatedHero: Hero) => {
-    setGameState((current) => ({
-      ...current,
-      heroes: current?.heroes.map((h) => (h.id === updatedHero.id ? updatedHero : h)) || [],
-    }))
+    updateStateWithEvent(
+      'HERO_UPDATE',
+      `Updated ${updatedHero.name}`,
+      (current) => ({
+        ...current,
+        heroes: current?.heroes.map((h) => (h.id === updatedHero.id ? updatedHero : h)) || [],
+      })
+    )
   }
 
   const handleEditTrait = (heroId: string, traitIndex: number) => {
@@ -81,17 +105,21 @@ function App() {
   const handleSaveTrait = (trait: Trait) => {
     if (!dialogs.editingTrait) return
 
-    setGameState((current) => ({
-      ...current,
-      heroes: current?.heroes.map((hero) => {
-        if (hero.id === dialogs.editingTrait!.heroId) {
-          const newTraits = [...hero.traits]
-          newTraits[dialogs.editingTrait!.traitIndex] = trait
-          return { ...hero, traits: newTraits }
-        }
-        return hero
-      }) || [],
-    }))
+    updateStateWithEvent(
+      'TRAIT_SAVE',
+      `Saved trait for hero`,
+      (current) => ({
+        ...current,
+        heroes: current?.heroes.map((hero) => {
+          if (hero.id === dialogs.editingTrait!.heroId) {
+            const newTraits = [...hero.traits]
+            newTraits[dialogs.editingTrait!.traitIndex] = trait
+            return { ...hero, traits: newTraits }
+          }
+          return hero
+        }) || [],
+      })
+    )
 
     dialogs.closeTraitEdit()
     toast.success('Trait saved')
@@ -100,24 +128,32 @@ function App() {
   const handleSaveByStander = (byStander: Trait) => {
     if (!dialogs.editingByStander) return
 
-    setGameState((current) => ({
-      ...current,
-      heroes: current?.heroes.map((hero) => 
-        hero.id === dialogs.editingByStander!.heroId 
-          ? { ...hero, byStander } 
-          : hero
-      ) || [],
-    }))
+    updateStateWithEvent(
+      'BYSTANDER_SAVE',
+      `Saved bystander for hero`,
+      (current) => ({
+        ...current,
+        heroes: current?.heroes.map((hero) => 
+          hero.id === dialogs.editingByStander!.heroId 
+            ? { ...hero, byStander } 
+            : hero
+        ) || [],
+      })
+    )
 
     dialogs.closeByStanderEdit()
     toast.success('Bystander saved')
   }
 
   const handleToggleAutomaticMode = () => {
-    setGameState((current) => ({
-      ...current,
-      isAutomaticMode: !current?.isAutomaticMode,
-    }))
+    updateStateWithEvent(
+      'AUTOMATIC_MODE_TOGGLE',
+      `Automatic mode ${!gameState?.isAutomaticMode ? 'enabled' : 'disabled'}`,
+      (current) => ({
+        ...current,
+        isAutomaticMode: !current?.isAutomaticMode,
+      })
+    )
   }
 
   const triggerStartTurn = () => {
@@ -142,40 +178,41 @@ function App() {
 
     const newTurn = createTurn(heroId)
 
-    setGameState((current) => {
-      const totalHeroes = current?.heroes.length || 0
-      const needsNewRound = shouldStartNewRound(current?.currentRound, totalHeroes)
-      
-      // Reset available actions for the active hero
-      const updatedHeroes = current?.heroes.map(h => 
-        h.id === hero.id ? resetHeroActions(h) : h
-      ) || []
+    const totalHeroes = gameState?.heroes.length || 0
+    const needsNewRound = shouldStartNewRound(gameState?.currentRound, totalHeroes)
+    
+    // Reset available actions for the active hero
+    const updatedHeroes = gameState?.heroes.map(h => 
+      h.id === hero.id ? resetHeroActions(h) : h
+    ) || []
 
-      if (needsNewRound) {
-        // Start a new round
-        const newRound = createRound(current?.currentRound, newTurn)
+    let newState: GameState
+    if (needsNewRound) {
+      // Start a new round
+      const newRound = createRound(gameState?.currentRound, newTurn)
 
-        return {
-          ...current,
-          heroes: updatedHeroes,
-          currentRound: newRound,
-          currentTurn: newTurn,
-        }
-      } else {
-        // Add turn to existing round
-        const updatedRound = {
-          ...current!.currentRound!,
-          turns: [...current!.currentRound!.turns, newTurn],
-        }
-
-        return {
-          ...current,
-          heroes: updatedHeroes,
-          currentRound: updatedRound,
-          currentTurn: newTurn,
-        }
+      newState = {
+        ...gameState,
+        heroes: updatedHeroes,
+        currentRound: newRound,
+        currentTurn: newTurn,
       }
-    })
+    } else {
+      // Add turn to existing round
+      const updatedRound = {
+        ...gameState!.currentRound!,
+        turns: [...gameState!.currentRound!.turns, newTurn],
+      }
+
+      newState = {
+        ...gameState,
+        heroes: updatedHeroes,
+        currentRound: updatedRound,
+        currentTurn: newTurn,
+      }
+    }
+
+    recordEvent('TURN_START', `${hero.name} started their turn`, newState)
 
     dialogs.closeStartTurnDialog()
     
@@ -186,12 +223,16 @@ function App() {
   const startTurnPhase = (hero: Hero) => {
     const { newHunger, hungerIncreased } = processStartPhase(hero)
 
-    setGameState((current) => ({
-      ...current,
-      heroes: current?.heroes.map(h => 
-        h.id === hero.id ? { ...h, hunger: newHunger } : h
-      ) || [],
-    }))
+    updateStateWithEvent(
+      'HERO_HUNGER_CHANGE',
+      `${hero.name} hunger ${hungerIncreased ? `increased to ${newHunger}` : `at max (${newHunger})`}`,
+      (current) => ({
+        ...current,
+        heroes: current?.heroes.map(h => 
+          h.id === hero.id ? { ...h, hunger: newHunger } : h
+        ) || [],
+      })
+    )
 
     // Show confirmation dialog
     dialogs.setPhaseConfirmation({
@@ -216,13 +257,17 @@ function App() {
     const hero = gameState?.heroes.find(h => h.id === activeTurn?.heroId)
     const actionCount = hero && hero.level >= 7 ? 4 : 3
 
-    setGameState((current) => ({
-      ...current,
-      currentTurn: current?.currentTurn ? {
-        ...current.currentTurn,
-        phase: 'ACTIONS',
-      } : undefined,
-    }))
+    updateStateWithEvent(
+      'PHASE_CHANGE',
+      `Entered ACTIONS phase`,
+      (current) => ({
+        ...current,
+        currentTurn: current?.currentTurn ? {
+          ...current.currentTurn,
+          phase: 'ACTIONS',
+        } : undefined,
+      })
+    )
     
     toast.success(`Actions phase - Perform your ${actionCount} actions`)
   }
@@ -253,17 +298,21 @@ function App() {
     }
 
     // Update hero health
-    setGameState((current) => ({
-      ...current,
-      heroes: current?.heroes.map(h => 
-        h.id === hero.id ? { ...h, health: newHealth } : h
-      ) || [],
-      currentTurn: current?.currentTurn ? {
-        ...current.currentTurn,
-        phase: 'END',
-      } : undefined,
-      gameOver: isGameOver,
-    }))
+    updateStateWithEvent(
+      'TURN_END',
+      `${hero.name} ended their turn${wasRavenous ? ' (ravenous)' : ''}`,
+      (current) => ({
+        ...current,
+        heroes: current?.heroes.map(h => 
+          h.id === hero.id ? { ...h, health: newHealth } : h
+        ) || [],
+        currentTurn: current?.currentTurn ? {
+          ...current.currentTurn,
+          phase: 'END',
+        } : undefined,
+        gameOver: isGameOver,
+      })
+    )
 
     // Show confirmation dialog
     if (isGameOver) {
@@ -289,10 +338,14 @@ function App() {
         onConfirm: () => {
           dialogs.closePhaseConfirmation()
           // Set turn to IDLE
-          setGameState((current) => ({
-            ...current,
-            currentTurn: undefined,
-          }))
+          updateStateWithEvent(
+            'PHASE_CHANGE',
+            `Turn completed, returned to IDLE`,
+            (current) => ({
+              ...current,
+              currentTurn: undefined,
+            })
+          )
           toast.success(`${hero.name}'s turn ended`)
         },
       })
@@ -304,20 +357,25 @@ function App() {
   }
 
   const handleAttackComplete = (heroId: string, hungerGained: number, enemiesDefeated: number) => {
-    setGameState((current) => ({
-      ...current,
-      heroes: current?.heroes.map(h => {
-        if (h.id === heroId) {
-          const updatedHero = { 
-            ...h, 
-            hunger: clampHunger(h.hunger + hungerGained), 
-            level: h.level + enemiesDefeated 
+    const hero = gameState?.heroes.find(h => h.id === heroId)
+    updateStateWithEvent(
+      'ATTACK',
+      `${hero?.name || 'Hero'} attacked (hunger +${hungerGained}, defeated ${enemiesDefeated})`,
+      (current) => ({
+        ...current,
+        heroes: current?.heroes.map(h => {
+          if (h.id === heroId) {
+            const updatedHero = { 
+              ...h, 
+              hunger: clampHunger(h.hunger + hungerGained), 
+              level: h.level + enemiesDefeated 
+            }
+            return consumeAction(updatedHero)
           }
-          return consumeAction(updatedHero)
-        }
-        return h
-      }) || [],
-    }))
+          return h
+        }) || [],
+      })
+    )
     dialogs.closeAttackDialog()
   }
 
@@ -326,20 +384,25 @@ function App() {
   }
 
   const handleDevourComplete = (heroId: string, hungerGained: number, wasSuccessful: boolean, enemiesDevoured: number) => {
-    setGameState((current) => ({
-      ...current,
-      heroes: current?.heroes.map(h => {
-        if (h.id === heroId) {
-          const updatedHero = { 
-            ...h, 
-            hunger: wasSuccessful ? 0 : clampHunger(h.hunger + hungerGained),
-            level: h.level + enemiesDevoured,
+    const hero = gameState?.heroes.find(h => h.id === heroId)
+    updateStateWithEvent(
+      'DEVOUR',
+      `${hero?.name || 'Hero'} devoured ${wasSuccessful ? '(success)' : '(failed)'}`,
+      (current) => ({
+        ...current,
+        heroes: current?.heroes.map(h => {
+          if (h.id === heroId) {
+            const updatedHero = { 
+              ...h, 
+              hunger: wasSuccessful ? 0 : clampHunger(h.hunger + hungerGained),
+              level: h.level + enemiesDevoured,
+            }
+            return consumeAction(updatedHero)
           }
-          return consumeAction(updatedHero)
-        }
-        return h
-      }) || [],
-    }))
+          return h
+        }) || [],
+      })
+    )
     dialogs.closeDevourDialog()
   }
 
@@ -351,21 +414,29 @@ function App() {
 
     if (availableSlotIndex !== undefined) {
       // Consume action and open edit dialog
-      setGameState((current) => ({
-        ...current,
-        heroes: current?.heroes.map(h => 
-          h.id === heroId ? consumeAction(h) : h
-        ) || [],
-      }))
+      updateStateWithEvent(
+        'GAIN_TRAIT',
+        `${hero.name} gaining trait (action consumed)`,
+        (current) => ({
+          ...current,
+          heroes: current?.heroes.map(h => 
+            h.id === heroId ? consumeAction(h) : h
+          ) || [],
+        })
+      )
       handleEditTrait(heroId, availableSlotIndex)
     } else {
       // No slots available
-      setGameState((current) => ({
-        ...current,
-        heroes: current?.heroes.map(h => 
-          h.id === heroId ? consumeAction(h) : h
-        ) || [],
-      }))
+      updateStateWithEvent(
+        'ACTION_CONSUME',
+        `${hero.name} tried to gain trait (no slots, action consumed)`,
+        (current) => ({
+          ...current,
+          heroes: current?.heroes.map(h => 
+            h.id === heroId ? consumeAction(h) : h
+          ) || [],
+        })
+      )
       toast.info('No trait slots available! Evaluate manually what to do (e.g., replace an existing trait).', {
         duration: 5000,
       })
@@ -403,6 +474,10 @@ function App() {
           onStartTurn={triggerStartTurn}
           isAutomaticMode={gameState?.isAutomaticMode || false}
           onToggleAutomaticMode={handleToggleAutomaticMode}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onUndo={undo}
+          onRedo={redo}
         />
       </header>
 
