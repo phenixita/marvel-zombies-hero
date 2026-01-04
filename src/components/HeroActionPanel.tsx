@@ -1,6 +1,8 @@
 import { Button } from '@/components/ui/button'
 import { Hero } from "@/lib/Hero"
 import { cn } from '@/lib/utils'
+import { isRavenous, getMaxActions } from '@/lib/heroUtils'
+import { consumeAction } from '@/lib/gameLogic'
 
 interface HeroActionPanelProps {
   hero: Hero
@@ -13,9 +15,9 @@ interface HeroActionPanelProps {
 }
 
 export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDevour, onGainTrait, className }: HeroActionPanelProps) {
-  const isRavenous = hero.hunger >= 4
+  const ravenous = isRavenous(hero)
   const actionsRemaining = hero.availableActions ?? 0
-  const totalActions = hero.level >= 7 ? 4 : 3
+  const totalActions = getMaxActions(hero.level)
   const actionsExhausted = actionsRemaining === 0
 
   const handleAction = (action: 'devour' | 'attack' | 'move' | 'interact' | 'open_door' | 'gain_trait') => {
@@ -38,10 +40,7 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
     }
 
     // Generic actions simply consume an action
-    onUpdateHero({
-      ...hero,
-      availableActions: Math.max(0, actionsRemaining - 1)
-    })
+    onUpdateHero(consumeAction(hero))
   }
 
   return (
@@ -67,7 +66,7 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
           </div>
         </div>
 
-        {isRavenous && (
+        {ravenous && (
           <div className="bg-destructive/20 px-3 py-1 rounded border border-destructive/30 text-xs text-destructive font-bold uppercase tracking-tighter animate-pulse">
             Ravenous - Only Devour allowed!
           </div>
@@ -78,7 +77,7 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
             size="sm"
             variant="secondary"
             className="h-10 text-[10px] uppercase font-bold tracking-tight"
-            disabled={actionsExhausted || isRavenous}
+            disabled={actionsExhausted || ravenous}
             onClick={() => handleAction('move')}
           >
             Move
@@ -87,7 +86,7 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
             size="sm"
             variant="secondary"
             className="h-10 text-[10px] uppercase font-bold tracking-tight"
-            disabled={actionsExhausted || isRavenous}
+            disabled={actionsExhausted || ravenous}
             onClick={() => handleAction('attack')}
           >
             Attack
@@ -105,7 +104,7 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
             size="sm"
             variant="secondary"
             className="h-10 text-[10px] uppercase font-bold tracking-tight"
-            disabled={actionsExhausted || isRavenous}
+            disabled={actionsExhausted || ravenous}
             onClick={() => handleAction('open_door')}
           >
             Open Door
@@ -114,7 +113,7 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
             size="sm"
             variant="secondary"
             className="h-10 text-[10px] uppercase font-bold tracking-tight"
-            disabled={actionsExhausted || isRavenous}
+            disabled={actionsExhausted || ravenous}
             onClick={() => handleAction('gain_trait')}
           >
             Gain Trait
@@ -123,7 +122,7 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
             size="sm"
             variant="secondary"
             className="h-10 text-[10px] uppercase font-bold tracking-tight"
-            disabled={actionsExhausted || isRavenous}
+            disabled={actionsExhausted || ravenous}
             onClick={() => handleAction('interact')}
           >
             Interact
