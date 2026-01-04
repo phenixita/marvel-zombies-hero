@@ -1,4 +1,5 @@
 import { Trait } from "@/lib/Trait"
+import { ZOMBIE_TRAIT_TEMPLATES } from "@/lib/zombieTraits"
 import { EntityEditDialog } from './EntityEditDialog'
 
 interface TraitEditDialogProps {
@@ -15,6 +16,7 @@ export function TraitEditDialog({ open, onClose, trait, onSave }: TraitEditDialo
       onClose={onClose}
       entity={trait}
       onSave={onSave}
+      templates={[...ZOMBIE_TRAIT_TEMPLATES].sort((a, b) => a.title.localeCompare(b.title))}
       labels={{
         dialogTitle: trait ? 'Edit Trait' : 'Add Trait',
         dialogDescription: "Define the hero's special ability and its effects",

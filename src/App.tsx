@@ -26,6 +26,7 @@ import {
 } from './lib/gameLogic'
 import { clampHunger, createHero } from './lib/heroUtils'
 
+
 function App() {
   const [gameState, setGameState] = usePersistentState<GameState>(
     'marvel-zombies-game',
@@ -87,7 +88,23 @@ function App() {
         if (hero.id === dialogs.editingTrait!.heroId) {
           const newTraits = [...hero.traits]
           newTraits[dialogs.editingTrait!.traitIndex] = trait
-          return { ...hero, traits: newTraits }
+          // Consume action only when successfully saving a new trait
+          // We check if we are editing an existing trait or adding a new one
+          // If traitIndex points to an existing trait, it's an edit (no cost)
+          // But wait, handleGainTrait is called specifically for "Gain Trait" action
+          // which implies adding a new one.
+          // However, handleEditTrait is also used for editing existing ones.
+          // We need to know if this was a "Gain Trait" action.
+          // The simplest way is to check if the slot was empty before.
+          const wasEmpty = !hero.traits[dialogs.editingTrait!.traitIndex]
+          
+          let updatedHero = { ...hero, traits: newTraits }
+          
+          if (wasEmpty) {
+             updatedHero = consumeAction(updatedHero)
+          }
+          
+          return updatedHero
         }
         return hero
       }) || [],
@@ -350,22 +367,20 @@ function App() {
     const availableSlotIndex = [0, 1].find(idx => !hero.traits[idx])
 
     if (availableSlotIndex !== undefined) {
-      // Consume action and open edit dialog
-      setGameState((current) => ({
-        ...current,
-        heroes: current?.heroes.map(h => 
-          h.id === heroId ? consumeAction(h) : h
-        ) || [],
-      }))
+      // Open edit dialog without consuming action yet
       handleEditTrait(heroId, availableSlotIndex)
     } else {
       // No slots available
-      setGameState((current) => ({
-        ...current,
-        heroes: current?.heroes.map(h => 
-          h.id === heroId ? consumeAction(h) : h
-        ) || [],
-      }))
+      // Even if we replace, it might be considered a "Gain Trait" action?
+      // For now, let's stick to the logic that you can only gain if you have a slot.
+      // If the user wants to replace, they should probably delete one first?
+      // Or we can allow opening the dialog on a filled slot to replace it, 
+      // but that's "Edit Trait", not "Gain Trait".
+      // The "Gain Trait" button in UI usually implies getting a new one.
+      
+      // If we want to support replacing, we would need to ask the user which one to replace.
+      // But the current UI logic finds the first available slot.
+      
       toast.info('No trait slots available! Evaluate manually what to do (e.g., replace an existing trait).', {
         duration: 5000,
       })
