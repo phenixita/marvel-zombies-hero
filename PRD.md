@@ -132,12 +132,12 @@ Animations should provide clear feedback for state changes while maintaining gam
 - **Icon Selection**: 
   - Plus (add power/hero)
   - Minus (reduce health/hunger)
-  - PencilSimple (edit name/power)
+  - Pencil (edit name/power)
   - Skull (hunger indicator)
   - Heart (health indicator)
   - Keyboard (show shortcuts)
-  - ArrowsClockwise (reset game)
-  - Lightning (power indicator)
+  - RefreshCw (reset game)
+  - Zap (power indicator)
 
 - **Spacing**: 
   - Card padding: p-6

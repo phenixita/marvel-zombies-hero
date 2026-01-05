@@ -20,7 +20,7 @@ Useful detail are found in the [PRD.md](../PRD.md).
 - **Compound components pattern**: `HeroCard` composes `HealthIndicator`, `HungerScale`, `PowerSlot` sub-components
 - **Radix UI as foundation**: All dialogs, buttons, inputs use [src/components/ui](src/components/ui) wrappers
 - Custom game components live in [src/components](src/components) (not in ui/ subfolder)
-- Icons: Use `@phosphor-icons/react` (not Lucide except where already used)
+- Icons: Use `lucide-react` for all icons
 
 ### Styling & Theming
 - **Tailwind v4 with CSS variables**: All colors reference Radix color scales via `--color-*` vars in [theme.css](src/styles/theme.css)
@@ -44,8 +44,7 @@ npm run build  # TypeScript compile + Vite build to dist/
 **No test suite configured** - manual testing in browser required
 
 ### Integration Points
-- **GitHub Spark framework**: Uses `@github/spark` for Vite plugin and icon proxy (DO NOT REMOVE from vite.config.ts)
-- **Phosphor icon proxy**: `createIconImportProxy()` enables Spark's icon optimization
+- **GitHub Spark framework**: Uses `@github/spark` for Vite plugin (DO NOT REMOVE from vite.config.ts)
 - **Path alias**: `@/` maps to `src/` - always use for imports
 
 ## Project-Specific Conventions
@@ -60,8 +59,7 @@ npm run build  # TypeScript compile + Vite build to dist/
 
 ## Common Gotchas
 
-- **Don't import from `lucide-react`** - prefer Phosphor icons (except HealthIndicator already uses HeartIcon)
-- **Vite config plugins** - `createIconImportProxy()` and `sparkPlugin()` require `as PluginOption` cast
+- **Vite config plugins** - `sparkPlugin()` requires `as PluginOption` cast
 - **CSS imports order** - theme.css must import Radix colors before Tailwind layers
 - **TypeScript path resolution** - `@/` alias only works with `resolve()` from 'path' in vite.config.ts
 - **localStorage key** - Game state uses fixed key `'marvel-zombies-game'` - don't change
