@@ -3,7 +3,7 @@ import { consumeAction, restoreAction } from '@/lib/gameLogic'
 import { Hero } from "@/lib/Hero"
 import { getMaxActions, isRavenous } from '@/lib/heroUtils'
 import { cn } from '@/lib/utils'
-import { Stop } from '@phosphor-icons/react'
+import { Square } from 'lucide-react'
 import { actionButtonClassName, actionsBoxClassName, actionsCountBaseClassName, buttonsGridClassName, containerClassName, endTurnButtonClassName, headerClassName, heroNameClassName, infoClassName, layoutClassName, ravenousClassName, separatorClassName, smallLabelClassName } from './styles'
 
 interface HeroActionPanelProps {
@@ -159,7 +159,7 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
           onClick={onEndTurn}
           disabled={!hero}
         >
-          <Stop /> End Turn
+          <Square fill='white' /> End Turn
         </Button>
       </div>
     </div>
