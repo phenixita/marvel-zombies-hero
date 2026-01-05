@@ -6,7 +6,7 @@ import { useInlineEdit } from '@/hooks/useInlineEdit'
 import { Hero } from "@/lib/Hero"
 import { clampHealth, clampHunger, getLevelCategory, getLevelColor, isRavenous } from '@/lib/heroUtils'
 import { cn } from '@/lib/utils'
-import { PencilSimple } from '@phosphor-icons/react'
+import { Edit } from 'lucide-react'
 import { HealthIndicator } from './HealthIndicator'
 import { TraitSlot } from './TraitSlot'
 
@@ -127,7 +127,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
                   className="h-6 w-6 opacity-50 hover:opacity-100 transition-opacity"
                   onClick={nameEdit.startEdit}
                 >
-                  <PencilSimple className="w-3 h-3" />
+                  <Edit className="w-3 h-3" />
                 </Button>
               </div>
             )}
@@ -181,7 +181,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
               >
                 <span className="text-muted-foreground uppercase text-[10px] tracking-wider">Base Attack</span>
                 <span className="font-rajdhani font-bold text-lg">{hero.baseAttackValue}</span>
-                <PencilSimple className="w-3 h-3 opacity-50 group-hover/attack:opacity-100 transition-opacity" />
+                <Edit className="w-3 h-3 opacity-50 group-hover/attack:opacity-100 transition-opacity" />
               </button>
             )}
           </div>
@@ -207,7 +207,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
               >
                 <span className="text-muted-foreground uppercase text-[10px] tracking-wider">Precision</span>
                 <span className="font-rajdhani font-bold text-lg">{hero.precision}+</span>
-                <PencilSimple className="w-3 h-3 opacity-50 group-hover/precision:opacity-100 transition-opacity" />
+                <Edit className="w-3 h-3 opacity-50 group-hover/precision:opacity-100 transition-opacity" />
               </button>
             )}
           </div>
@@ -238,7 +238,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
             <span className="uppercase text-[10px] font-bold tracking-widest text-white/90">EXP</span>
             <span className="font-rajdhani font-bold text-2xl text-white leading-none">{hero.level}</span>
             <span className="text-[10px] font-medium text-white/90 uppercase tracking-wide opacity-90">- {getLevelCategory(hero.level)}</span>
-            <PencilSimple className="w-3.5 h-3.5 text-white/80" />
+            <Edit className="w-3.5 h-3.5 text-white/80" />
           </>
         )}
       </div>

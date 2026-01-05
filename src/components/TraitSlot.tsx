@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Trait } from "@/lib/Trait"
 import { cn } from '@/lib/utils'
-import { Lightning, PencilSimple, Trash, UserCircle } from '@phosphor-icons/react'
+import { Edit, Trash2, User, Zap } from 'lucide-react'
 
 interface TraitSlotProps {
   trait: Trait | null
@@ -13,8 +13,8 @@ interface TraitSlotProps {
 }
 
 export function TraitSlot({ trait, onEdit, onDelete, className, emptyText = 'Add Trait', icon = 'lightning' }: TraitSlotProps) {
-  const EmptyIcon = icon === 'user' ? UserCircle : Lightning
-  const FilledIcon = icon === 'user' ? UserCircle : Lightning
+  const EmptyIcon = icon === 'user' ? User : Zap
+  const FilledIcon = icon === 'user' ? User : Zap
   
   if (!trait) {
     return (
@@ -28,7 +28,7 @@ export function TraitSlot({ trait, onEdit, onDelete, className, emptyText = 'Add
         )}
       >
         <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground group-hover:text-accent transition-colors">
-          <EmptyIcon weight="regular" className="w-5 h-5" />
+          <EmptyIcon className="w-5 h-5" />
           <span className="text-xs font-medium uppercase tracking-wide">{emptyText}</span>
         </div>
       </button>
@@ -44,7 +44,7 @@ export function TraitSlot({ trait, onEdit, onDelete, className, emptyText = 'Add
       )}
     >
       <div className="flex items-start gap-2 mb-2">
-        <FilledIcon weight="fill" className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+        <FilledIcon className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
         <h3 className="font-rajdhani font-semibold text-sm uppercase tracking-tight text-accent flex-1 leading-tight">
           {trait.title}
         </h3>
@@ -58,7 +58,7 @@ export function TraitSlot({ trait, onEdit, onDelete, className, emptyText = 'Add
           className="h-6 w-6"
           onClick={onEdit}
         >
-          <PencilSimple className="w-3 h-3" />
+          <Edit className="w-3 h-3" />
         </Button>
         {onDelete && (
           <Button
@@ -67,7 +67,7 @@ export function TraitSlot({ trait, onEdit, onDelete, className, emptyText = 'Add
             className="h-6 w-6 hover:bg-destructive hover:text-destructive-foreground"
             onClick={onDelete}
           >
-            <Trash className="w-3 h-3" />
+            <Trash2 className="w-3 h-3" />
           </Button>
         )}
       </div>

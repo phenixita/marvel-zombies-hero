@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import { Skull } from '@phosphor-icons/react'
+import { Skull } from 'lucide-react'
 
 interface HungerScaleProps {
   hunger: number
@@ -12,7 +12,7 @@ export function HungerScale({ hunger, maxHunger, onChange, className }: HungerSc
   return (
     <div className={cn('flex flex-col-reverse gap-1', className)}>
       <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted text-muted-foreground">
-        <Skull weight="fill" className="w-6 h-6" />
+        <Skull className="w-6 h-6" />
       </div>
       {Array.from({ length: maxHunger + 1 }).map((_, index) => {
         const active = index <= hunger

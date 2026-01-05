@@ -1,8 +1,7 @@
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { KeyboardIcon, Plus } from 'lucide-react'
-import { Play } from '@phosphor-icons/react'
+import { Switch } from '@/components/ui/switch'
+import { KeyboardIcon, Play, Plus } from 'lucide-react'
 
 interface HeaderProps {
     onShowKeyboardHelp: () => void
@@ -31,7 +30,7 @@ export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomatic
                             title="Start Turn (Ctrl/Cmd+T)"
                             className="gap-2"
                         >
-                            <Play className="w-4 h-4" weight="fill" />
+                            <Play className="w-4 h-4" />
                             Start Turn
                         </Button>
                         <div className="flex items-center gap-2">

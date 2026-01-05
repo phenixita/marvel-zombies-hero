@@ -1,15 +1,15 @@
 import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Hero } from "@/lib/Hero"
 import { cn } from '@/lib/utils'
-import { CheckCircle, Crosshair, Skull } from '@phosphor-icons/react'
+import { CheckCircle, Crosshair, Skull } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface AttackDialogProps {
@@ -182,7 +182,7 @@ export function AttackDialog({ open, hero, onComplete, onClose }: AttackDialogPr
               <div className="bg-muted/50 p-3 rounded-lg text-sm space-y-2">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <Skull className="text-destructive" weight="fill" />
+                        <Skull className="text-destructive" />
                         <span className="text-muted-foreground">Hunger Gained:</span>
                     </div>
                     <span className="font-rajdhani font-bold text-destructive text-lg">{hungerCount}</span>
@@ -196,7 +196,7 @@ export function AttackDialog({ open, hero, onComplete, onClose }: AttackDialogPr
                 </div>
                 <div className="flex items-center justify-between border-t border-border pt-2">
                     <div className="flex items-center gap-2">
-                        <CheckCircle className="text-green-500" weight="fill" />
+                        <CheckCircle className="text-green-500" />
                         <span className="text-foreground font-medium">Valid Successes:</span>
                     </div>
                     <span className="font-rajdhani font-bold text-green-500 text-xl">{successCount}</span>

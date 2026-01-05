@@ -1,10 +1,9 @@
-import { Button } from '@/components/ui/button'
 import { consumeAction, restoreAction } from '@/lib/gameLogic'
 import { Hero } from "@/lib/Hero"
 import { getMaxActions, isRavenous } from '@/lib/heroUtils'
 import { cn } from '@/lib/utils'
-import { Square } from 'lucide-react'
-import { actionButtonClassName, actionsBoxClassName, actionsCountBaseClassName, buttonsGridClassName, containerClassName, endTurnButtonClassName, headerClassName, heroNameClassName, infoClassName, layoutClassName, ravenousClassName, separatorClassName, smallLabelClassName } from './styles'
+import { ActionButton } from './ActionButton'
+import { EndTurnButton } from './EndTurnButton'
 
 interface HeroActionPanelProps {
   hero: Hero | undefined
@@ -56,111 +55,91 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
 
   return (
     <div className={cn(
-      containerClassName,
+      "bg-card/95 backdrop-blur-sm border-t-2 border-accent/20 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.3)] animate-in slide-in-from-bottom-full duration-300",
       className
     )}>
-      <div className={layoutClassName}>
-        <div className={headerClassName}>
-          <div className={infoClassName}>
-            <span className={smallLabelClassName}> {hero ? "Active Hero" : "Waiting..."}</span>
-            <span className={heroNameClassName}>{hero?.name}</span>
-            {ravenous && (<span className={ravenousClassName}>Ravenous!</span>)}
+      <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-4">
+        <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold"> {hero ? "Active Hero" : "Waiting..."}</span>
+            <span className="font-rajdhani font-bold text-xl text-accent-11 uppercase">{hero?.name}</span>
+            {ravenous && (<span className="text-xs text-red-500 font-bold mt-1 uppercase">Ravenous!</span>)}
           </div>
 
-          <div className={separatorClassName} />
+          <div className="h-10 w-[2px] bg-border hidden md:block" />
 
-          <div className={actionsBoxClassName}>
-            <span className={smallLabelClassName}>Actions</span>
+          <div className="flex flex-col items-center">
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Actions</span>
             <span className={cn(
-              actionsCountBaseClassName,
+              "font-rajdhani font-bold text-2xl",
               actionsExhausted ? "text-muted-foreground" : "text-accent-11"
             )}>{actionsRemaining}/{totalActions}</span>
           </div>
         </div>
 
-        <div className={buttonsGridClassName}>
-          <Button
-            size="sm"
+        <div className="flex-1 grid grid-cols-4 gap-3 w-full">
+          <ActionButton
             variant="secondary"
-            className={actionButtonClassName}
             disabled={isMoveDisabled}
             onClick={() => handleAction('move')}
           >
             Move
-          </Button>
-          <Button
-            size="sm"
+          </ActionButton>
+          <ActionButton
             variant="secondary"
-            className={actionButtonClassName}
             disabled={isActionDisabled}
             onClick={() => handleAction('attack')}
           >
             Attack
-          </Button>
-          <Button
-            size="sm"
+          </ActionButton>
+          <ActionButton
             variant="secondary"
-            className={actionButtonClassName}
             disabled={!hero || hero.hunger < 1 || actionsExhausted}
             onClick={() => handleAction('devour')}
           >
             Devour
-          </Button>
-          <Button
-            size="sm"
+          </ActionButton>
+          <ActionButton
             variant="link"
-            className={actionButtonClassName}
             disabled={actionsRemaining >= totalActions || !hero}
             onClick={() => handleAction('increment_turn_counter')}
           >
             Add action
-          </Button>
-          <Button
-            size="sm"
+          </ActionButton>
+          <ActionButton
             variant="secondary"
-            className={actionButtonClassName}
             disabled={isActionDisabled}
             onClick={() => handleAction('open_door')}
           >
             Open Door
-          </Button>
-          <Button
-            size="sm"
+          </ActionButton>
+          <ActionButton
             variant="secondary"
-            className={actionButtonClassName}
             disabled={isActionDisabled}
             onClick={() => handleAction('gain_trait')}
           >
             Gain Trait
-          </Button>
-          <Button
-            size="sm"
+          </ActionButton>
+          <ActionButton
             variant="secondary"
-            className={actionButtonClassName}
             disabled={isActionDisabled}
             onClick={() => handleAction('interact')}
           >
             Interact
-          </Button>
-          <Button
-            size="sm"
+          </ActionButton>
+          <ActionButton
             variant="link"
-            className={actionButtonClassName}
             disabled={actionsRemaining <= 0 || !hero }
             onClick={() => handleAction('decrement_turn_counter')}
           >
             Remove action
-          </Button>
+          </ActionButton>
         </div>
 
-        <Button
-          variant="default"
-          className={endTurnButtonClassName}
-          onClick={onEndTurn}
+        <EndTurnButton
           disabled={!hero}
-        >
-          <Square fill='white' /> End Turn
-        </Button>
+          onClick={onEndTurn}
+        />
       </div>
     </div>
   )

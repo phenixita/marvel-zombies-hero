@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { CheckCircle, Crosshair, Skull } from '@phosphor-icons/react'
+import { CheckCircle, Crosshair, Skull } from 'lucide-react'
 import { RollCell } from './roll-cell'
 
 interface RollResultsStepProps {
@@ -27,7 +27,7 @@ export function RollResultsStep({
       <div className="bg-muted/50 p-3 rounded-lg text-sm space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Skull className="text-destructive" weight="fill" />
+            <Skull className="text-destructive" />
             <span className="text-muted-foreground">Hunger Gained:</span>
           </div>
           <span className="font-rajdhani font-bold text-destructive text-lg">{hungerCount}</span>
@@ -41,7 +41,7 @@ export function RollResultsStep({
         </div>
         <div className="flex items-center justify-between border-t border-border pt-2">
           <div className="flex items-center gap-2">
-            <CheckCircle className="text-green-500" weight="fill" />
+            <CheckCircle className="text-green-500" />
             <span className="text-foreground font-medium">Valid Successes:</span>
           </div>
           <span className="font-rajdhani font-bold text-green-500 text-xl">{successCount}</span>
