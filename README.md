@@ -1,23 +1,19 @@
-# ✨ Welcome to Your Spark Template!
-You've just launched your brand-new Spark Template Codespace — everything’s fired up and ready for you to explore, build, and create with Spark!
+# Marvel Zombie Companion
 
-This template is your blank canvas. It comes with a minimal setup to help you get started quickly with Spark development.
+Companion app to assist playing Marvel Zombie board game.
 
-🚀 What's Inside?
-- A clean, minimal Spark environment
-- Pre-configured for local development
-- Ready to scale with your ideas
-  
-🧠 What Can You Do?
+It supports:
 
-Right now, this is just a starting point — the perfect place to begin building and testing your Spark applications.
+- Zombie Hero Turn management
+- Actions tracking
+- Trait slots
+- Bystander slots
+- Rolling dice for normal attach and devour
 
-🧹 Just Exploring?
-No problem! If you were just checking things out and don’t need to keep this code:
+The app helps managing the turn for a Zombie Hero acting as an interactive checklist. It does not implement any other game logic.
 
-- Simply delete your Spark.
-- Everything will be cleaned up — no traces left behind.
+<img width="1035" height="941" alt="image" src="https://github.com/user-attachments/assets/e36def52-f063-408e-b566-19dd6073f317" />
 
-📄 License For Spark Template Resources 
+<img width="1920" height="1920" alt="image" src="https://github.com/user-attachments/assets/6b64170c-31fa-44b6-aaab-9f3a58789a26" />
 
-The Spark Template files and resources from GitHub are licensed under the terms of the MIT license, Copyright GitHub, Inc.
+[Give it a try!](https://mzc.micheleferracin.it)
