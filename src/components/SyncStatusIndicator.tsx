@@ -27,6 +27,11 @@ const config: Record<SyncStatus, { icon: React.ReactNode; label: string; classNa
     label: 'Sync error',
     className: 'text-destructive',
   },
+  conflict: {
+    icon: <Cloud className="w-4 h-4" />,
+    label: 'Resolve sync conflict',
+    className: 'text-amber-500',
+  },
 }
 
 export function SyncStatusIndicator({ status }: SyncStatusIndicatorProps) {

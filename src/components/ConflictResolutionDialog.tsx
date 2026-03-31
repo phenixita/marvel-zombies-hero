@@ -7,12 +7,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { ConflictInfo } from '@/hooks/useCloudSync'
-import { Cloud, HardDrive } from 'lucide-react'
+import { ConflictChoice, ConflictInfo } from '@/hooks/useCloudSync'
+import { Cloud, HardDrive, RotateCcw } from 'lucide-react'
 
 interface ConflictResolutionDialogProps {
   conflict: ConflictInfo | null
-  onResolve: (choice: 'local' | 'cloud') => void
+  onResolve: (choice: ConflictChoice) => void
 }
 
 function formatDate(ts: number): string {
@@ -46,6 +46,9 @@ export function ConflictResolutionDialog({ conflict, onResolve }: ConflictResolu
               {conflict.localState.heroes.length} hero{conflict.localState.heroes.length !== 1 ? 'es' : ''}
             </p>
             <p className="text-xs text-muted-foreground">
+              Revision: {conflict.localRevision}
+            </p>
+            <p className="text-xs text-muted-foreground">
               Last modified: {formatDate(conflict.localTimestamp)}
             </p>
           </div>
@@ -57,6 +60,9 @@ export function ConflictResolutionDialog({ conflict, onResolve }: ConflictResolu
             </div>
             <p className="text-sm text-muted-foreground">
               {conflict.cloudState.heroes.length} hero{conflict.cloudState.heroes.length !== 1 ? 'es' : ''}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Revision: {conflict.cloudRevision}
             </p>
             <p className="text-xs text-muted-foreground">
               Last modified: {formatDate(conflict.cloudTimestamp)}
@@ -72,6 +78,10 @@ export function ConflictResolutionDialog({ conflict, onResolve }: ConflictResolu
           <Button onClick={() => onResolve('cloud')} className="gap-2">
             <Cloud className="w-4 h-4" />
             Load Cloud
+          </Button>
+          <Button variant="secondary" onClick={() => onResolve('fresh')} className="gap-2">
+            <RotateCcw className="w-4 h-4" />
+            Start Fresh
           </Button>
         </DialogFooter>
       </DialogContent>

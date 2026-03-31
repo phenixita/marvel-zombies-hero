@@ -11,7 +11,7 @@ import { usePersistentState } from '@/hooks/usePersistentState'
 import { Toaster, toast } from 'sonner'
 import { ByStanderEditDialog } from './components/ByStanderEditDialog'
 import { TraitEditDialog } from './components/TraitEditDialog'
-import { GameState } from "./lib/GameState"
+import { createGameSessionId, ensureGameSessionId, GameState } from "./lib/GameState"
 import { Hero } from "./lib/Hero"
 import { Trait } from "./lib/Trait"
 import {
@@ -37,6 +37,7 @@ function App() {
   const [gameState, setGameState] = usePersistentState<GameState>(
     'marvel-zombies-game',
     {
+      gameSessionId: createGameSessionId(),
       heroes: [],
       isAutomaticMode: false,
     }
@@ -72,6 +73,12 @@ function App() {
     return () => window.removeEventListener('keydown', handleGlobalKeyboard)
   }, [handleGlobalKeyboard])
 
+  useEffect(() => {
+    if (!gameState?.gameSessionId) {
+      setGameState((current) => ensureGameSessionId(current))
+    }
+  }, [gameState?.gameSessionId, setGameState])
+
  
 
   const handleStartNewGame = (heroCount: number) => {
@@ -80,6 +87,10 @@ function App() {
     )
 
     setGameState({
+      gameSessionId:
+        gameState?.heroes.length === 0 && gameState?.gameSessionId
+          ? gameState.gameSessionId
+          : createGameSessionId(),
       heroes: newHeroes,
       isAutomaticMode: preferences.defaultAutomaticMode,
     })
