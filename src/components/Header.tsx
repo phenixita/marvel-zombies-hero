@@ -3,8 +3,10 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
+import { UserProfilePanel } from '@/components/UserProfilePanel'
 import { useAuth } from '@/hooks/useAuth'
 import { KeyboardIcon, LogIn, Play, Plus } from 'lucide-react'
+import { useState } from 'react'
 
 interface HeaderProps {
     onShowKeyboardHelp: () => void
@@ -12,9 +14,11 @@ interface HeaderProps {
     onStartTurn: () => void
     isAutomaticMode: boolean
     onToggleAutomaticMode: () => void
+    profileOpen?: boolean
+    onProfileOpenChange?: (open: boolean) => void
 }
 
-function AuthSection() {
+function AuthSection({ onOpenProfile }: { onOpenProfile: () => void }) {
     const { user, loading, signIn } = useAuth()
 
     if (loading) {
@@ -35,7 +39,11 @@ function AuthSection() {
             .toUpperCase()
 
         return (
-            <div className="flex items-center gap-2">
+            <button
+                onClick={onOpenProfile}
+                className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted/50 transition-colors cursor-pointer"
+                title="Open profile (Ctrl/Cmd+L)"
+            >
                 <Avatar className="h-8 w-8">
                     <AvatarImage
                         src={user.photoURL ?? undefined}
@@ -46,7 +54,7 @@ function AuthSection() {
                 <span className="text-sm font-rajdhani font-bold uppercase tracking-wide truncate max-w-[120px]">
                     {user.displayName ?? user.email ?? 'Player'}
                 </span>
-            </div>
+            </button>
         )
     }
 
@@ -54,7 +62,7 @@ function AuthSection() {
         <Button
             variant="ghost"
             onClick={signIn}
-            title="Sign in with Google"
+            title="Sign in with Google (Ctrl/Cmd+L)"
             className="gap-2"
         >
             <LogIn className="w-4 h-4" />
@@ -63,8 +71,13 @@ function AuthSection() {
     )
 }
 
-export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomaticMode, onToggleAutomaticMode }: HeaderProps) {
+export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomaticMode, onToggleAutomaticMode, profileOpen, onProfileOpenChange }: HeaderProps) {
+    const [localProfileOpen, setLocalProfileOpen] = useState(false)
+    const isProfileOpen = profileOpen ?? localProfileOpen
+    const setProfileOpen = onProfileOpenChange ?? setLocalProfileOpen
+
     return (
+        <>
             <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                 <div>
                     <h1 className="font-rajdhani font-bold text-3xl uppercase tracking-tight text-accent">
@@ -119,9 +132,15 @@ export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomatic
 
                     {/* Auth Section */}
                     <div className="flex items-center border-l border-border pl-4">
-                        <AuthSection />
+                        <AuthSection onOpenProfile={() => setProfileOpen(true)} />
                     </div>
                 </div>
-            </div> 
+            </div>
+
+            <UserProfilePanel
+                open={isProfileOpen}
+                onClose={() => setProfileOpen(false)}
+            />
+        </>
     )
 }

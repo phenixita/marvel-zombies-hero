@@ -25,6 +25,8 @@ import {
   shouldStartNewRound
 } from './lib/gameLogic'
 import { clampHunger, createHero } from './lib/heroUtils'
+import { useAuth } from '@/hooks/useAuth'
+import { useCallback, useEffect, useState } from 'react'
 
 
 function App() {
@@ -38,6 +40,25 @@ function App() {
 
   // Use custom hooks for dialog management
   const dialogs = useGameDialogs()
+  const { user, signIn } = useAuth()
+  const [profileOpen, setProfileOpen] = useState(false)
+
+  // Global keyboard shortcut: Ctrl/Cmd+L → open login or profile
+  const handleGlobalKeyboard = useCallback((e: KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+      e.preventDefault()
+      if (user) {
+        setProfileOpen(prev => !prev)
+      } else {
+        signIn()
+      }
+    }
+  }, [user, signIn])
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleGlobalKeyboard)
+    return () => window.removeEventListener('keydown', handleGlobalKeyboard)
+  }, [handleGlobalKeyboard])
 
  
 
@@ -418,6 +439,8 @@ function App() {
           onStartTurn={triggerStartTurn}
           isAutomaticMode={gameState?.isAutomaticMode || false}
           onToggleAutomaticMode={handleToggleAutomaticMode}
+          profileOpen={profileOpen}
+          onProfileOpenChange={setProfileOpen}
         />
       </header>
 
