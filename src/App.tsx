@@ -26,7 +26,10 @@ import {
 } from './lib/gameLogic'
 import { clampHunger, createHero } from './lib/heroUtils'
 import { useAuth } from '@/hooks/useAuth'
+import { useCloudSync } from '@/hooks/useCloudSync'
 import { useUserPreferences } from '@/hooks/useUserPreferences'
+import { useUserStats } from '@/hooks/useUserStats'
+import { ConflictResolutionDialog } from '@/components/ConflictResolutionDialog'
 import { useCallback, useEffect, useState } from 'react'
 
 
@@ -43,7 +46,14 @@ function App() {
   const dialogs = useGameDialogs()
   const { user, signIn } = useAuth()
   const { preferences, updatePreferences } = useUserPreferences()
+  const { stats, incrementStat } = useUserStats()
   const [profileOpen, setProfileOpen] = useState(false)
+
+  // Cloud sync
+  const { syncStatus, conflict, resolveConflict } = useCloudSync({
+    gameState,
+    setGameState: (s) => setGameState(s),
+  })
 
   // Global keyboard shortcut: Ctrl/Cmd+L → open login or profile
   const handleGlobalKeyboard = useCallback((e: KeyboardEvent) => {
@@ -73,6 +83,10 @@ function App() {
       heroes: newHeroes,
       isAutomaticMode: preferences.defaultAutomaticMode,
     })
+
+    // Track stats
+    incrementStat('gamesPlayed')
+    incrementStat('heroesCreated', heroCount)
 
     dialogs.closeInitDialog()
     toast.success(`Game initialized with ${heroCount} hero${heroCount > 1 ? 'es' : ''}`)
@@ -382,6 +396,9 @@ function App() {
       }) || [],
     }))
     dialogs.closeDevourDialog()
+
+    // Track devour roll stat
+    incrementStat('devourRolls')
   }
 
   const handleGainTrait = (heroId: string) => {
@@ -421,13 +438,22 @@ function App() {
           onClose={() => {}}
         />
         <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center space-y-4">
+          <div className="text-center space-y-6">
             <h1 className="font-rajdhani font-bold text-4xl uppercase tracking-tight text-accent">
               Marvel Zombies
             </h1>
             <p className="text-muted-foreground">Hero Turn Tracker</p>
+            {!user && (
+              <button
+                onClick={signIn}
+                className="text-sm text-muted-foreground hover:text-accent transition-colors underline underline-offset-4 cursor-pointer"
+              >
+                Sign in to sync across devices
+              </button>
+            )}
           </div>
         </div>
+        <ConflictResolutionDialog conflict={conflict} onResolve={resolveConflict} />
       </>
     )
   }
@@ -446,6 +472,8 @@ function App() {
           onProfileOpenChange={setProfileOpen}
           preferences={preferences}
           onUpdatePreferences={updatePreferences}
+          syncStatus={syncStatus}
+          stats={stats}
         />
       </header>
 
@@ -529,6 +557,8 @@ function App() {
           onClose={dialogs.closeDevourDialog}
         />
       )}
+
+      <ConflictResolutionDialog conflict={conflict} onResolve={resolveConflict} />
     </div>
   )
 }

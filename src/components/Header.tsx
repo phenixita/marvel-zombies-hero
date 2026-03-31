@@ -1,3 +1,4 @@
+import { SyncStatusIndicator } from '@/components/SyncStatusIndicator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -5,7 +6,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { UserProfilePanel } from '@/components/UserProfilePanel'
 import { useAuth } from '@/hooks/useAuth'
+import { SyncStatus } from '@/hooks/useCloudSync'
 import { UserPreferences } from '@/lib/UserPreferences'
+import { UserStats } from '@/lib/UserStats'
 import { KeyboardIcon, LogIn, Play, Plus } from 'lucide-react'
 import { useState } from 'react'
 
@@ -19,6 +22,8 @@ interface HeaderProps {
     onProfileOpenChange?: (open: boolean) => void
     preferences: UserPreferences
     onUpdatePreferences: (patch: Partial<UserPreferences>) => void
+    syncStatus?: SyncStatus
+    stats?: UserStats
 }
 
 function AuthSection({ onOpenProfile }: { onOpenProfile: () => void }) {
@@ -74,7 +79,7 @@ function AuthSection({ onOpenProfile }: { onOpenProfile: () => void }) {
     )
 }
 
-export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomaticMode, onToggleAutomaticMode, profileOpen, onProfileOpenChange, preferences, onUpdatePreferences }: HeaderProps) {
+export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomaticMode, onToggleAutomaticMode, profileOpen, onProfileOpenChange, preferences, onUpdatePreferences, syncStatus, stats }: HeaderProps) {
     const [localProfileOpen, setLocalProfileOpen] = useState(false)
     const isProfileOpen = profileOpen ?? localProfileOpen
     const setProfileOpen = onProfileOpenChange ?? setLocalProfileOpen
@@ -134,7 +139,8 @@ export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomatic
                     </div>
 
                     {/* Auth Section */}
-                    <div className="flex items-center border-l border-border pl-4">
+                    <div className="flex items-center gap-2 border-l border-border pl-4">
+                        {syncStatus && <SyncStatusIndicator status={syncStatus} />}
                         <AuthSection onOpenProfile={() => setProfileOpen(true)} />
                     </div>
                 </div>
@@ -145,6 +151,7 @@ export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomatic
                 onClose={() => setProfileOpen(false)}
                 preferences={preferences}
                 onUpdatePreferences={onUpdatePreferences}
+                stats={stats}
             />
         </>
     )

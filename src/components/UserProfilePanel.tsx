@@ -11,19 +11,37 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { useAuth } from '@/hooks/useAuth'
 import { UserPreferences } from '@/lib/UserPreferences'
-import { Cloud, LogOut, Zap } from 'lucide-react'
+import { UserStats } from '@/lib/UserStats'
+import { deleteAllCloudData } from '@/lib/cloudDataService'
+import { Cloud, LogOut, Zap, Trash2, Gamepad2, Users, Dice1 } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 interface UserProfilePanelProps {
   open: boolean
   onClose: () => void
   preferences: UserPreferences
   onUpdatePreferences: (patch: Partial<UserPreferences>) => void
+  stats?: UserStats
 }
 
-export function UserProfilePanel({ open, onClose, preferences, onUpdatePreferences }: UserProfilePanelProps) {
+export function UserProfilePanel({ open, onClose, preferences, onUpdatePreferences, stats }: UserProfilePanelProps) {
   const { user, signOut } = useAuth()
+  const [deleteStep, setDeleteStep] = useState<0 | 1>(0)
+  const [deleting, setDeleting] = useState(false)
 
   if (!user) return null
 
@@ -41,8 +59,22 @@ export function UserProfilePanel({ open, onClose, preferences, onUpdatePreferenc
     onClose()
   }
 
+  const handleDeleteCloudData = async () => {
+    if (!user) return
+    setDeleting(true)
+    try {
+      await deleteAllCloudData(user.uid)
+      toast.success('Cloud data deleted successfully')
+      setDeleteStep(0)
+    } catch {
+      toast.error('Failed to delete cloud data')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   return (
-    <Sheet open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
+    <Sheet open={open} onOpenChange={(isOpen) => { if (!isOpen) { onClose(); setDeleteStep(0) } }}>
       <SheetContent side="right">
         <SheetHeader>
           <SheetTitle className="font-rajdhani text-2xl uppercase">
@@ -76,6 +108,37 @@ export function UserProfilePanel({ open, onClose, preferences, onUpdatePreferenc
 
         <Separator />
 
+        {/* Statistics Section */}
+        {stats && (
+          <>
+            <div className="px-4 py-6 space-y-4">
+              <h3 className="font-rajdhani font-bold text-sm uppercase tracking-wider text-muted-foreground">
+                Statistics
+              </h3>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div className="flex flex-col items-center gap-1 rounded-lg border border-border p-3">
+                  <Gamepad2 className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-rajdhani font-bold text-2xl">{stats.gamesPlayed}</span>
+                  <span className="text-xs text-muted-foreground">Games</span>
+                </div>
+                <div className="flex flex-col items-center gap-1 rounded-lg border border-border p-3">
+                  <Users className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-rajdhani font-bold text-2xl">{stats.heroesCreated}</span>
+                  <span className="text-xs text-muted-foreground">Heroes</span>
+                </div>
+                <div className="flex flex-col items-center gap-1 rounded-lg border border-border p-3">
+                  <Dice1 className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-rajdhani font-bold text-2xl">{stats.devourRolls}</span>
+                  <span className="text-xs text-muted-foreground">Devours</span>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+          </>
+        )}
+
         <div className="px-4 py-6 space-y-5">
           <h3 className="font-rajdhani font-bold text-sm uppercase tracking-wider text-muted-foreground">
             Preferences
@@ -104,6 +167,49 @@ export function UserProfilePanel({ open, onClose, preferences, onUpdatePreferenc
               onCheckedChange={(checked) => onUpdatePreferences({ defaultAutomaticMode: checked })}
             />
           </div>
+        </div>
+
+        <Separator />
+
+        <div className="px-4 py-6 space-y-4">
+          <h3 className="font-rajdhani font-bold text-sm uppercase tracking-wider text-muted-foreground">
+            Danger Zone
+          </h3>
+
+          <AlertDialog open={deleteStep === 1} onOpenChange={(open) => { if (!open) setDeleteStep(0) }}>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
+                onClick={() => setDeleteStep(1)}
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete Cloud Data
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="font-rajdhani text-xl uppercase">
+                  Delete all cloud data?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently delete your cloud-saved game state, preferences, and statistics.
+                  Your local game data on this device will NOT be affected.
+                  This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteCloudData}
+                  disabled={deleting}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {deleting ? 'Deleting…' : 'Yes, delete everything'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
 
         <Separator />
