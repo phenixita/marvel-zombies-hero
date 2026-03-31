@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { UserProfilePanel } from '@/components/UserProfilePanel'
 import { useAuth } from '@/hooks/useAuth'
+import { UserPreferences } from '@/lib/UserPreferences'
 import { KeyboardIcon, LogIn, Play, Plus } from 'lucide-react'
 import { useState } from 'react'
 
@@ -16,6 +17,8 @@ interface HeaderProps {
     onToggleAutomaticMode: () => void
     profileOpen?: boolean
     onProfileOpenChange?: (open: boolean) => void
+    preferences: UserPreferences
+    onUpdatePreferences: (patch: Partial<UserPreferences>) => void
 }
 
 function AuthSection({ onOpenProfile }: { onOpenProfile: () => void }) {
@@ -71,7 +74,7 @@ function AuthSection({ onOpenProfile }: { onOpenProfile: () => void }) {
     )
 }
 
-export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomaticMode, onToggleAutomaticMode, profileOpen, onProfileOpenChange }: HeaderProps) {
+export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomaticMode, onToggleAutomaticMode, profileOpen, onProfileOpenChange, preferences, onUpdatePreferences }: HeaderProps) {
     const [localProfileOpen, setLocalProfileOpen] = useState(false)
     const isProfileOpen = profileOpen ?? localProfileOpen
     const setProfileOpen = onProfileOpenChange ?? setLocalProfileOpen
@@ -140,6 +143,8 @@ export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomatic
             <UserProfilePanel
                 open={isProfileOpen}
                 onClose={() => setProfileOpen(false)}
+                preferences={preferences}
+                onUpdatePreferences={onUpdatePreferences}
             />
         </>
     )

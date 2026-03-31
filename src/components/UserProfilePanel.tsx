@@ -1,6 +1,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
+import { Switch } from '@/components/ui/switch'
 import {
   Sheet,
   SheetContent,
@@ -10,14 +12,17 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { useAuth } from '@/hooks/useAuth'
-import { LogOut } from 'lucide-react'
+import { UserPreferences } from '@/lib/UserPreferences'
+import { Cloud, LogOut, Zap } from 'lucide-react'
 
 interface UserProfilePanelProps {
   open: boolean
   onClose: () => void
+  preferences: UserPreferences
+  onUpdatePreferences: (patch: Partial<UserPreferences>) => void
 }
 
-export function UserProfilePanel({ open, onClose }: UserProfilePanelProps) {
+export function UserProfilePanel({ open, onClose, preferences, onUpdatePreferences }: UserProfilePanelProps) {
   const { user, signOut } = useAuth()
 
   if (!user) return null
@@ -66,6 +71,38 @@ export function UserProfilePanel({ open, onClose }: UserProfilePanelProps) {
             {email && (
               <p className="text-sm text-muted-foreground">{email}</p>
             )}
+          </div>
+        </div>
+
+        <Separator />
+
+        <div className="px-4 py-6 space-y-5">
+          <h3 className="font-rajdhani font-bold text-sm uppercase tracking-wider text-muted-foreground">
+            Preferences
+          </h3>
+
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Cloud className="w-4 h-4 text-muted-foreground" />
+              <Label htmlFor="cloud-sync" className="cursor-pointer">Cloud Sync</Label>
+            </div>
+            <Switch
+              id="cloud-sync"
+              checked={preferences.cloudSyncEnabled}
+              onCheckedChange={(checked) => onUpdatePreferences({ cloudSyncEnabled: checked })}
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-muted-foreground" />
+              <Label htmlFor="auto-mode-default" className="cursor-pointer">Auto Mode Default</Label>
+            </div>
+            <Switch
+              id="auto-mode-default"
+              checked={preferences.defaultAutomaticMode}
+              onCheckedChange={(checked) => onUpdatePreferences({ defaultAutomaticMode: checked })}
+            />
           </div>
         </div>
 
