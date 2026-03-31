@@ -3,6 +3,7 @@ import { signInWithGoogle, signOut, handleRedirectResult } from '@/lib/auth'
 import { User } from 'firebase/auth'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
 interface AuthContextValue {
   user: User | null
@@ -37,6 +38,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Sign-in failed')
       setActionError(err)
+      toast.error(`Sign-in failed: ${err.message}`)
     }
   }, [])
 
@@ -47,6 +49,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Sign-out failed')
       setActionError(err)
+      toast.error(`Sign-out failed: ${err.message}`)
     }
   }, [])
 

@@ -38,7 +38,8 @@ export async function signInWithGoogle() {
       return null
     }
 
-    // Unexpected error — rethrow so callers can handle
+    // Unexpected error — log for debugging and rethrow
+    console.error('Google sign-in failed:', firebaseError.code, error)
     throw error
   }
 }
