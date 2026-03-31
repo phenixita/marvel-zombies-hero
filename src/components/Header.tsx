@@ -1,7 +1,10 @@
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
-import { KeyboardIcon, Play, Plus } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
+import { KeyboardIcon, LogIn, Play, Plus } from 'lucide-react'
 
 interface HeaderProps {
     onShowKeyboardHelp: () => void
@@ -9,6 +12,55 @@ interface HeaderProps {
     onStartTurn: () => void
     isAutomaticMode: boolean
     onToggleAutomaticMode: () => void
+}
+
+function AuthSection() {
+    const { user, loading, signIn } = useAuth()
+
+    if (loading) {
+        return (
+            <div className="flex items-center gap-2">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <Skeleton className="h-4 w-20" />
+            </div>
+        )
+    }
+
+    if (user) {
+        const initials = (user.displayName ?? user.email ?? '?')
+            .split(' ')
+            .map(w => w[0])
+            .slice(0, 2)
+            .join('')
+            .toUpperCase()
+
+        return (
+            <div className="flex items-center gap-2">
+                <Avatar className="h-8 w-8">
+                    <AvatarImage
+                        src={user.photoURL ?? undefined}
+                        alt={user.displayName ?? 'User avatar'}
+                    />
+                    <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+                </Avatar>
+                <span className="text-sm font-rajdhani font-bold uppercase tracking-wide truncate max-w-[120px]">
+                    {user.displayName ?? user.email ?? 'Player'}
+                </span>
+            </div>
+        )
+    }
+
+    return (
+        <Button
+            variant="ghost"
+            onClick={signIn}
+            title="Sign in with Google"
+            className="gap-2"
+        >
+            <LogIn className="w-4 h-4" />
+            Sign in
+        </Button>
+    )
 }
 
 export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomaticMode, onToggleAutomaticMode }: HeaderProps) {
@@ -63,6 +115,11 @@ export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomatic
                             <Plus className="w-5 h-5 mr-2" />
                             New Game
                         </Button>
+                    </div>
+
+                    {/* Auth Section */}
+                    <div className="flex items-center border-l border-border pl-4">
+                        <AuthSection />
                     </div>
                 </div>
             </div> 
