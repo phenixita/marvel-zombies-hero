@@ -11,7 +11,13 @@ import { usePersistentState } from '@/hooks/usePersistentState'
 import { Toaster, toast } from 'sonner'
 import { ByStanderEditDialog } from './components/ByStanderEditDialog'
 import { TraitEditDialog } from './components/TraitEditDialog'
-import { createGameSessionId, ensureGameSessionId, GameState } from "./lib/GameState"
+import {
+  archiveCurrentGameIfNeeded,
+  createGameSessionId,
+  GameState,
+  isGameStateEmpty,
+  normalizeGameState,
+} from "./lib/GameState"
 import { Hero } from "./lib/Hero"
 import { Trait } from "./lib/Trait"
 import {
@@ -74,10 +80,8 @@ function App() {
   }, [handleGlobalKeyboard])
 
   useEffect(() => {
-    if (!gameState?.gameSessionId) {
-      setGameState((current) => ensureGameSessionId(current))
-    }
-  }, [gameState?.gameSessionId, setGameState])
+    setGameState((current) => normalizeGameState(current))
+  }, [setGameState])
 
  
 
@@ -86,13 +90,21 @@ function App() {
       createHero(`Hero ${index + 1}`)
     )
 
-    setGameState({
-      gameSessionId:
-        gameState?.heroes.length === 0 && gameState?.gameSessionId
-          ? gameState.gameSessionId
+    setGameState((current) => {
+      const normalizedCurrent = normalizeGameState(current)
+      const withArchivedCurrent = archiveCurrentGameIfNeeded(normalizedCurrent)
+      const reuseCurrentSessionId =
+        isGameStateEmpty(normalizedCurrent) && !!normalizedCurrent.gameSessionId
+
+      return normalizeGameState({
+        gameSessionId: reuseCurrentSessionId
+          ? normalizedCurrent.gameSessionId
           : createGameSessionId(),
-      heroes: newHeroes,
-      isAutomaticMode: preferences.defaultAutomaticMode,
+        heroes: newHeroes,
+        isAutomaticMode: preferences.defaultAutomaticMode,
+        gameOver: false,
+        gameHistory: withArchivedCurrent.gameHistory,
+      })
     })
 
     // Track stats
@@ -101,6 +113,41 @@ function App() {
 
     dialogs.closeInitDialog()
     toast.success(`Game initialized with ${heroCount} hero${heroCount > 1 ? 'es' : ''}`)
+  }
+
+  const handleRestoreArchivedGame = (sessionId: string) => {
+    let restoredHeroCount = 0
+
+    setGameState((current) => {
+      const normalizedCurrent = normalizeGameState(current)
+      const history = normalizedCurrent.gameHistory ?? []
+      const selectedEntry = history.find((entry) => entry.sessionId === sessionId)
+
+      if (!selectedEntry) {
+        return normalizedCurrent
+      }
+
+      // Remove selected history first to prevent re-adding duplicates during archive.
+      let nextHistory = history.filter((entry) => entry.sessionId !== sessionId)
+      if (!isGameStateEmpty(normalizedCurrent)) {
+        const archivedCurrent = archiveCurrentGameIfNeeded({
+          ...normalizedCurrent,
+          gameHistory: nextHistory,
+        })
+        nextHistory = archivedCurrent.gameHistory ?? []
+      }
+
+      restoredHeroCount = selectedEntry.state.heroes.length
+
+      return normalizeGameState({
+        ...selectedEntry.state,
+        gameSessionId: selectedEntry.sessionId,
+        gameHistory: nextHistory,
+      }, selectedEntry.sessionId)
+    })
+
+    dialogs.closeInitDialog()
+    toast.success(`Archived game restored (${restoredHeroCount} hero${restoredHeroCount !== 1 ? 'es' : ''})`)
   }
 
   const handleContinueGame = () => {
@@ -446,6 +493,8 @@ function App() {
         <GameInitDialog
           onStartNew={handleStartNewGame}
           onContinue={handleContinueGame}
+          archivedGames={gameState?.gameHistory ?? []}
+          onRestoreArchived={handleRestoreArchivedGame}
           onClose={() => {}}
         />
         <div className="min-h-screen flex items-center justify-center">
@@ -525,6 +574,8 @@ function App() {
         <GameInitDialog
           onStartNew={handleStartNewGame}
           onContinue={handleContinueGame}
+          archivedGames={gameState?.gameHistory ?? []}
+          onRestoreArchived={handleRestoreArchivedGame}
           onClose={dialogs.closeInitDialog}
         />
       )}

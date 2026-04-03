@@ -8,7 +8,7 @@ import {
   Timestamp,
 } from 'firebase/firestore'
 import { firestore } from './firebase'
-import { ensureGameSessionId, GameState } from './GameState'
+import { GameState, normalizeGameState } from './GameState'
 
 function gameStateDocRef(uid: string) {
   if (!firestore) throw new Error('Firestore is not configured')
@@ -62,7 +62,7 @@ export async function saveCloudGameState(
   input: SaveCloudGameStateInput,
 ): Promise<SaveCloudGameStateResult> {
   const docRef = gameStateDocRef(uid)
-  const stateToSave = ensureGameSessionId(input.state)
+  const stateToSave = normalizeGameState(input.state)
 
   return runTransaction(firestore!, async (tx) => {
     const snap = await tx.get(docRef)
@@ -158,7 +158,7 @@ function toCloudGameState(data: RawCloudGameState): CloudGameState | null {
     serverTimestampRaw instanceof Timestamp ? serverTimestampRaw.toMillis() : 0
 
   return {
-    state: ensureGameSessionId((data.state as GameState) ?? { heroes: [] }, typeof data.sessionId === 'string' ? data.sessionId : undefined),
+    state: normalizeGameState((data.state as GameState) ?? { heroes: [] }, typeof data.sessionId === 'string' ? data.sessionId : undefined),
     lastModified: typeof data.lastModified === 'number' ? data.lastModified : 0,
     revision: typeof data.revision === 'number' ? data.revision : 0,
     sessionId: typeof data.sessionId === 'string' ? data.sessionId : null,

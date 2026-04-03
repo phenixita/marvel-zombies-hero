@@ -9,15 +9,24 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { GameHistoryEntry } from '@/lib/GameState'
 import { useState } from 'react'
 
 interface GameInitDialogProps {
   onStartNew: (heroCount: number) => void
   onContinue: () => void
+  archivedGames?: GameHistoryEntry[]
+  onRestoreArchived?: (sessionId: string) => void
   onClose?: () => void
 }
 
-export function GameInitDialog({ onStartNew, onContinue, onClose }: GameInitDialogProps) {
+export function GameInitDialog({
+  onStartNew,
+  onContinue,
+  archivedGames = [],
+  onRestoreArchived,
+  onClose,
+}: GameInitDialogProps) {
 
   const INIT_DEFAULT_HERO_COUNT = 2
   const [showHeroCountDialog, setShowHeroCountDialog] = useState(true)
@@ -26,6 +35,11 @@ export function GameInitDialog({ onStartNew, onContinue, onClose }: GameInitDial
 
   const handleConfirmReset = () => {
     setShowHeroCountDialog(true)
+  }
+
+  const handleRestore = (sessionId: string) => {
+    setShowHeroCountDialog(false)
+    onRestoreArchived?.(sessionId)
   }
 
   const handleCreateGame = () => {
@@ -52,6 +66,31 @@ export function GameInitDialog({ onStartNew, onContinue, onClose }: GameInitDial
           </DialogHeader>
 
           <div className="space-y-4 py-4">
+            {archivedGames.length > 0 && (
+              <div className="space-y-2">
+                <Label className="font-rajdhani uppercase text-sm">
+                  Restore Archived Game
+                </Label>
+                <div className="max-h-48 space-y-2 overflow-y-auto pr-1">
+                  {archivedGames.map((entry) => (
+                    <Button
+                      key={entry.sessionId}
+                      variant="outline"
+                      className="w-full justify-between text-left"
+                      onClick={() => handleRestore(entry.sessionId)}
+                    >
+                      <span className="truncate">
+                        {entry.state.heroes.length} hero{entry.state.heroes.length !== 1 ? 'es' : ''}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {entry.archivedAt > 0 ? new Date(entry.archivedAt).toLocaleString() : 'Archived session'}
+                      </span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="hero-count" className="font-rajdhani uppercase text-sm">
                 Number of Heroes (1-6)
@@ -73,6 +112,15 @@ export function GameInitDialog({ onStartNew, onContinue, onClose }: GameInitDial
           </div>
 
           <DialogFooter>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowHeroCountDialog(false)
+                onContinue()
+              }}
+            >
+              Continue
+            </Button>
             <Button variant="ghost" onClick={() => {
               setShowHeroCountDialog(false)
               onClose?.()

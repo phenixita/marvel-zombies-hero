@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from './useAuth'
 import { useUserPreferences } from './useUserPreferences'
-import { createGameSessionId, ensureGameSessionId, GameState } from '@/lib/GameState'
+import { createGameSessionId, GameState, normalizeGameState } from '@/lib/GameState'
 import {
   CloudGameState,
   loadCloudGameState,
@@ -128,14 +128,15 @@ export function useCloudSync({ gameState, setGameState }: UseCloudSyncOptions) {
   }, [])
 
   const getPreparedLocalState = useCallback(
-    (state: GameState) => ensureGameSessionId(state, currentStateRef.current.gameSessionId ?? createGameSessionId()),
+    (state: GameState) => normalizeGameState(state, currentStateRef.current.gameSessionId ?? createGameSessionId()),
     [],
   )
 
   const applyCloudAsCurrent = useCallback(
     (cloud: CloudGameState) => {
       skipNextSyncRef.current = true
-      setGameState(cloud.state)
+      const normalizedCloudState = normalizeGameState(cloud.state)
+      setGameState(normalizedCloudState)
       updateSyncMeta({
         baseCloudRevision: cloud.revision,
         lastSeenCloudRevision: cloud.revision,
@@ -394,10 +395,12 @@ export function useCloudSync({ gameState, setGameState }: UseCloudSyncOptions) {
 
     if (choice === 'fresh') {
       skipNextSyncRef.current = true
+      const normalizedCurrent = normalizeGameState(currentStateRef.current)
       setGameState({
         gameSessionId: createGameSessionId(),
         heroes: [],
-        isAutomaticMode: currentStateRef.current.isAutomaticMode ?? false,
+        isAutomaticMode: normalizedCurrent.isAutomaticMode ?? false,
+        gameHistory: normalizedCurrent.gameHistory ?? [],
       })
       updateSyncMeta({
         baseCloudRevision: conflict.cloudRevision,
