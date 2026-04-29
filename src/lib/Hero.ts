@@ -12,4 +12,5 @@ export interface Hero {
   traits: Trait[];
   availableActions: number;
   byStander: Trait | null;
+  photo?: string;
 }

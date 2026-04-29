@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { HungerScale } from '@/components/HungerScale'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -6,8 +7,9 @@ import { useInlineEdit } from '@/hooks/useInlineEdit'
 import { Hero } from "@/lib/Hero"
 import { clampHealth, clampHunger, getLevelCategory, getLevelColor, isRavenous } from '@/lib/heroUtils'
 import { cn } from '@/lib/utils'
-import { Edit } from 'lucide-react'
+import { Camera, Edit } from 'lucide-react'
 import { HealthIndicator } from './HealthIndicator'
+import { PhotoPickerDialog } from './PhotoPickerDialog'
 import { TraitSlot } from './TraitSlot'
 
 interface HeroCardProps {
@@ -22,6 +24,13 @@ interface HeroCardProps {
 
 export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isActiveTurn = false, hasPlayed = false, className }: HeroCardProps) {
   // Inline editing hooks
+  const [photoPickerOpen, setPhotoPickerOpen] = useState(false)
+
+  const handlePhotoSave = (photo: string | undefined) => {
+    onUpdateHero({ ...hero, photo })
+    setPhotoPickerOpen(false)
+  }
+
   const nameEdit = useInlineEdit(hero.name, (value) => {
     if (value.trim()) {
       onUpdateHero({ ...hero, name: value.trim() })
@@ -103,7 +112,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
         <div className="col-span-3 flex items-center justify-between gap-6">
 
 
-          <div className="flex-1">
+          <div className="flex-1 flex flex-col gap-2">
             {nameEdit.isEditing ? (
               <Input
                 value={nameEdit.inputValue}
@@ -131,6 +140,18 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
                 </Button>
               </div>
             )}
+
+            <button
+              onClick={() => setPhotoPickerOpen(true)}
+              className="self-start w-16 h-16 rounded-full overflow-hidden border-2 border-dashed border-muted-foreground/30 hover:border-accent/60 transition-colors flex items-center justify-center shrink-0"
+              title="Cambia foto personaggio"
+            >
+              {hero.photo ? (
+                <img src={hero.photo} alt={hero.name} className="w-full h-full object-cover" />
+              ) : (
+                <Camera className="w-5 h-5 text-muted-foreground/40" />
+              )}
+            </button>
           </div>
 
           <HealthIndicator
@@ -213,6 +234,13 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
           </div>
         </div>
       </div>
+
+      <PhotoPickerDialog
+        open={photoPickerOpen}
+        onClose={() => setPhotoPickerOpen(false)}
+        currentPhoto={hero.photo}
+        onSave={handlePhotoSave}
+      />
 
       {/* Footer: EXP Bar */}
       <div
