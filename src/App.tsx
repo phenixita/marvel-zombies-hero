@@ -37,6 +37,7 @@ import { useUserPreferences } from '@/hooks/useUserPreferences'
 import { useUserStats } from '@/hooks/useUserStats'
 import { ConflictResolutionDialog } from '@/components/ConflictResolutionDialog'
 import { useCallback, useEffect, useState } from 'react'
+import { useTheme } from 'next-themes'
 
 
 function App() {
@@ -53,6 +54,7 @@ function App() {
   const dialogs = useGameDialogs()
   const { user, signIn } = useAuth()
   const { preferences, updatePreferences } = useUserPreferences()
+  const { setTheme } = useTheme()
   const { stats, incrementStat } = useUserStats()
   const [profileOpen, setProfileOpen] = useState(false)
 
@@ -82,6 +84,10 @@ function App() {
   useEffect(() => {
     setGameState((current) => normalizeGameState(current))
   }, [setGameState])
+
+  useEffect(() => {
+    setTheme(preferences.theme)
+  }, [preferences.theme, setTheme])
 
  
 
@@ -539,7 +545,7 @@ function App() {
 
       <div className="flex flex-1">
 
-        <main className="flex-1 container mx-auto px-4 py-8">
+        <main className="flex-1 container mx-auto px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
           <HeroGrid
             heroes={gameState?.heroes || []}
             onUpdateHero={handleUpdateHero}

@@ -48,11 +48,12 @@ function AuthSection({ onOpenProfile }: { onOpenProfile: () => void }) {
 
         return (
             <button
+                type="button"
                 onClick={onOpenProfile}
-                className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted/50 transition-colors cursor-pointer"
+                className="relative z-20 flex shrink-0 items-center gap-2 rounded-md px-2 py-1 hover:bg-muted/50 transition-colors cursor-pointer"
                 title="Open profile (Ctrl/Cmd+L)"
             >
-                <Avatar className="h-8 w-8">
+                <Avatar className="size-8 h-8 w-8">
                     <AvatarImage
                         src={user.photoURL ?? undefined}
                         alt={user.displayName ?? 'User avatar'}
@@ -86,22 +87,22 @@ export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomatic
 
     return (
         <>
-            <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-                <div>
+            <div className="container mx-auto px-4 py-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-4">
+                <div className="min-w-[12rem] flex-1">
                     <h1 className="font-rajdhani font-bold text-3xl uppercase tracking-tight text-accent">
                         Marvel Zombies
                     </h1>
                     <p className="text-sm text-muted-foreground">Hero Turn Tracker</p>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="relative z-20 flex flex-wrap items-center justify-end gap-4">
                     {/* Action Panel */}
-                    <div className="flex items-center gap-4 border-l border-border pl-4">
+                    <div className="flex items-center gap-3 border-l border-border pl-3">
                         <Button
                             variant="default"
                             onClick={onStartTurn}
                             title="Start Turn (Ctrl/Cmd+T)"
-                            className="gap-2"
+                            className="gap-2 whitespace-nowrap"
                         >
                             <Play className="w-4 h-4" />
                             Start Turn
@@ -119,7 +120,7 @@ export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomatic
                     </div>
 
                     {/* Utility Buttons */}
-                    <div className="flex items-center gap-2 border-l border-border pl-4">
+                    <div className="flex items-center gap-2 border-l border-border pl-3">
                         <Button
                             variant="ghost"
                             size="icon"
@@ -132,6 +133,7 @@ export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomatic
                             variant="ghost"
                             onClick={onNewGame}
                             title="New Game (Ctrl/Cmd+N)"
+                            className="whitespace-nowrap"
                         >
                             <Plus className="w-5 h-5 mr-2" />
                             New Game
@@ -139,7 +141,7 @@ export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomatic
                     </div>
 
                     {/* Auth Section */}
-                    <div className="flex items-center gap-2 border-l border-border pl-4">
+                    <div className="relative z-20 flex shrink-0 items-center gap-2 border-l border-border pl-3">
                         {syncStatus && <SyncStatusIndicator status={syncStatus} />}
                         <AuthSection onOpenProfile={() => setProfileOpen(true)} />
                     </div>

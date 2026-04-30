@@ -1,6 +1,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -23,10 +30,10 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { useAuth } from '@/hooks/useAuth'
-import { UserPreferences } from '@/lib/UserPreferences'
+import { ThemePreference, UserPreferences } from '@/lib/UserPreferences'
 import { UserStats } from '@/lib/UserStats'
 import { deleteAllCloudData } from '@/lib/cloudDataService'
-import { Cloud, LogOut, Zap, Trash2, Gamepad2, Users, Dice1 } from 'lucide-react'
+import { Cloud, LogOut, Zap, Trash2, Gamepad2, Users, Dice1, Monitor } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -36,6 +43,13 @@ interface UserProfilePanelProps {
   preferences: UserPreferences
   onUpdatePreferences: (patch: Partial<UserPreferences>) => void
   stats?: UserStats
+}
+
+function parseThemePreference(value: string): ThemePreference {
+  if (value === 'light' || value === 'dark' || value === 'system') {
+    return value
+  }
+  return 'system'
 }
 
 export function UserProfilePanel({ open, onClose, preferences, onUpdatePreferences, stats }: UserProfilePanelProps) {
@@ -166,6 +180,26 @@ export function UserProfilePanel({ open, onClose, preferences, onUpdatePreferenc
               checked={preferences.defaultAutomaticMode}
               onCheckedChange={(checked) => onUpdatePreferences({ defaultAutomaticMode: checked })}
             />
+          </div>
+
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Monitor className="w-4 h-4 text-muted-foreground" />
+              <Label htmlFor="theme-mode" className="cursor-pointer">Theme</Label>
+            </div>
+            <Select
+              value={preferences.theme}
+              onValueChange={(value) => onUpdatePreferences({ theme: parseThemePreference(value) })}
+            >
+              <SelectTrigger id="theme-mode" className="w-36">
+                <SelectValue placeholder="Select mode" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="light">Light</SelectItem>
+                <SelectItem value="dark">Dark</SelectItem>
+                <SelectItem value="system">System</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

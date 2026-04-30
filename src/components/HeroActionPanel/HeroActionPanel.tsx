@@ -55,10 +55,10 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
 
   return (
     <div className={cn(
-      "bg-card/95 backdrop-blur-sm border-t-2 border-accent/20 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.3)] animate-in slide-in-from-bottom-full duration-300",
+      "bg-card/95 backdrop-blur-sm border-t-2 border-accent/20 p-4 sm:p-5 shadow-[0_-4px_20px_rgba(0,0,0,0.18)] animate-in slide-in-from-bottom-full duration-300",
       className
     )}>
-      <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-4">
+      <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-5">
         <div className="flex items-center gap-4 flex-shrink-0">
           <div className="flex flex-col">
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold"> {hero ? "Active Hero" : "Waiting..."}</span>
@@ -77,7 +77,7 @@ export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDev
           </div>
         </div>
 
-        <div className="flex-1 grid grid-cols-4 gap-3 w-full">
+        <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3 w-full">
           <ActionButton
             variant="secondary"
             disabled={isMoveDisabled}

@@ -86,7 +86,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
         className
       )}
     >
-      <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-6 p-4 flex-1">
+      <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-x-8 gap-y-5 p-5 sm:p-6 flex-1">
         {/* Column 1: Hunger Scale (spans 3 rows) */}
         <div className={cn(
           "row-span-3 flex flex-col items-center justify-center",
@@ -160,7 +160,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
         ))}
 
         {/* Row 3, Columns 2-4: Stats (Base Attack & Precision) */}
-        <div className="col-span-3 flex items-center justify-start gap-8 pl-2">
+        <div className="col-span-3 flex flex-wrap items-center justify-start gap-4 sm:gap-8 pl-2 pt-1">
           {/* Base Attack */}
           <div>
             {baseAttackEdit.isEditing ? (

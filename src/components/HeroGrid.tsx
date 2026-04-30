@@ -21,11 +21,11 @@ export function HeroGrid({ heroes, onUpdateHero, onEditTrait, onEditByStander, a
   const activeHero = heroes.find(h => h.id === activeTurnHeroId)
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-1 gap-2">
+    <div className="flex flex-col gap-6">
+      <div className="grid grid-cols-1 gap-6">
 
 
-        <div className="sticky bottom-4 z-50 mt-auto">
+        <div className="sticky bottom-6 z-50 mt-auto mb-1">
           <HeroActionPanel
             hero={activeHero}
             onUpdateHero={onUpdateHero}
@@ -33,7 +33,7 @@ export function HeroGrid({ heroes, onUpdateHero, onEditTrait, onEditByStander, a
             onAttack={onAttack}
             onDevour={onDevour}
             onGainTrait={onGainTrait}
-            className="rounded-xl border-2 shadow-2xl"
+            className="rounded-2xl border-2 shadow-2xl"
           />
         </div>
 
