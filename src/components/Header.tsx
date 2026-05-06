@@ -88,7 +88,7 @@ export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomatic
     return (
         <>
             <div className="container mx-auto px-3 py-2 sm:px-6 sm:py-4 lg:px-8 flex flex-wrap items-center justify-between gap-2 sm:gap-4">
-                <div className="min-w-0 flex-1">
+                <div className="min-w-[8rem] flex-1">
                     <h1 className="font-rajdhani font-bold text-2xl sm:text-3xl uppercase tracking-tight text-accent">
                         Marvel Zombies
                     </h1>
