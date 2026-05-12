@@ -1,3 +1,4 @@
+import { Bystander } from '@/lib/Bystander'
 import { Trait } from '@/lib/Trait'
 import { useState } from 'react'
 
@@ -13,7 +14,7 @@ export function useGameDialogs() {
 
   const [editingByStander, setEditingByStander] = useState<{
     heroId: string
-    byStander: Trait | null
+    byStander: Bystander | null
   } | null>(null)
 
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
@@ -42,7 +43,7 @@ export function useGameDialogs() {
     // ByStander editing
     editingByStander,
     setEditingByStander,
-    openByStanderEdit: (heroId: string, byStander: Trait | null) => {
+    openByStanderEdit: (heroId: string, byStander: Bystander | null) => {
       setEditingByStander({ heroId, byStander })
     },
     closeByStanderEdit: () => setEditingByStander(null),

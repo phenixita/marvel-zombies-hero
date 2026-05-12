@@ -1,10 +1,11 @@
+import { Bystander } from '@/lib/Bystander'
 import { Button } from '@/components/ui/button'
 import { Trait } from "@/lib/Trait"
 import { cn } from '@/lib/utils'
 import { Edit, Trash2, User, Zap } from 'lucide-react'
 
 interface TraitSlotProps {
-  trait: Trait | null
+  trait: Trait | Bystander | null
   onEdit: () => void
   onDelete?: () => void
   className?: string

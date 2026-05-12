@@ -44,7 +44,7 @@ export function normalizeGameState(state: GameState, fallbackSessionId?: string)
       ? state.gameSessionId
       : fallbackSessionId ?? createGameSessionId();
 
-  const heroes = Array.isArray(state.heroes) ? state.heroes : [];
+  const heroes = Array.isArray(state.heroes) ? state.heroes.map(normalizeHero) : [];
   const normalizedHistory = normalizeGameHistory((state as GameState & { gameHistory?: unknown }).gameHistory);
 
   return {
@@ -53,6 +53,28 @@ export function normalizeGameState(state: GameState, fallbackSessionId?: string)
     heroes,
     gameHistory: normalizedHistory,
   };
+}
+
+function normalizeHero(hero: Hero): Hero {
+  const rawByStander = hero.byStander as (Hero['byStander'] & { source?: 'preset' | 'custom' }) | null
+
+  if (!rawByStander) {
+    return hero
+  }
+
+  if (rawByStander.source === 'preset' || rawByStander.source === 'custom') {
+    return hero
+  }
+
+  return {
+    ...hero,
+    byStander: {
+      id: rawByStander.id,
+      title: rawByStander.title,
+      description: rawByStander.description,
+      source: 'custom',
+    },
+  }
 }
 
 export function archiveCurrentGameIfNeeded(state: GameState, archivedAt = Date.now()): GameState {

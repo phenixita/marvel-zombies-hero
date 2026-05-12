@@ -18,6 +18,7 @@ import {
   isGameStateEmpty,
   normalizeGameState,
 } from "./lib/GameState"
+import { Bystander } from './lib/Bystander'
 import { Hero } from "./lib/Hero"
 import { Trait } from "./lib/Trait"
 import {
@@ -216,7 +217,7 @@ function App() {
     toast.success('Trait saved')
   }
 
-  const handleSaveByStander = (byStander: Trait) => {
+  const handleSaveByStander = (byStander: Bystander) => {
     if (!dialogs.editingByStander) return
 
     setGameState((current) => ({

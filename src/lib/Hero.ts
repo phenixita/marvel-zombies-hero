@@ -1,4 +1,5 @@
-import { Trait } from "./Trait";
+import { Bystander } from './Bystander';
+import { Trait } from './Trait';
 
 
 export interface Hero {
@@ -11,6 +12,6 @@ export interface Hero {
   precision: number;
   traits: Trait[];
   availableActions: number;
-  byStander: Trait | null;
+  byStander: Bystander | null;
   photo?: string;
 }
