@@ -12,12 +12,10 @@ interface HeroActionPanelProps {
   onAttack?: (heroId: string) => void
   onDevour?: (heroId: string) => void
   onGainTrait?: (heroId: string) => void
-  onIncrementTurnCounter: (heroId: string) => void
-  onDecrementTurnCounter: (heroId: string) => void
   className?: string
 }
 
-export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDevour, onGainTrait, onIncrementTurnCounter, onDecrementTurnCounter, className }: HeroActionPanelProps) {
+export function HeroActionPanel({ hero, onUpdateHero, onEndTurn, onAttack, onDevour, onGainTrait, className }: HeroActionPanelProps) {
   const ravenous = hero ? isRavenous(hero) : false
   const actionsRemaining = hero?.availableActions ?? 0
   const totalActions = hero ? getMaxActions(hero.level) : 0
