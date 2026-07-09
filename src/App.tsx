@@ -525,8 +525,21 @@ function App() {
     )
   }
 
+  const hasCustomBackground = preferences.backgroundMode !== 'default' && !!preferences.backgroundImage
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div
+      className="min-h-screen bg-background flex flex-col"
+      style={hasCustomBackground ? {
+        backgroundImage: `url(${preferences.backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+      } : undefined}
+    >
+      {hasCustomBackground && (
+        <div className="fixed inset-0 -z-10 bg-black/45 pointer-events-none" />
+      )}
       <Toaster position="top-right" />
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
         <Header

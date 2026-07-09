@@ -35,8 +35,12 @@ export function useUserPreferences() {
       setLoading(true)
       loadUserPreferences(uid)
         .then((cloudPrefs) => {
-          setPreferencesState(cloudPrefs)
-          writeLocalPreferences(cloudPrefs)
+          // Background settings are local-only; preserve them across the cloud merge
+          setPreferencesState((prev) => {
+            const merged = { ...cloudPrefs, backgroundMode: prev.backgroundMode, backgroundImage: prev.backgroundImage }
+            writeLocalPreferences(merged)
+            return merged
+          })
         })
         .catch(() => {
           // Cloud load failed — keep local prefs
