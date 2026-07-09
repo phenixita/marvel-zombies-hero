@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
+import { BackgroundPickerDialog } from '@/components/BackgroundPickerDialog'
 import { UserProfilePanel } from '@/components/UserProfilePanel'
 import { useAuth } from '@/hooks/useAuth'
 import { SyncStatus } from '@/hooks/useCloudSync'
 import { UserPreferences } from '@/lib/UserPreferences'
 import { UserStats } from '@/lib/UserStats'
-import { KeyboardIcon, LogIn, Play, Plus } from 'lucide-react'
+import { Image, KeyboardIcon, LogIn, Play, Plus, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 
 interface HeaderProps {
@@ -82,6 +83,7 @@ function AuthSection({ onOpenProfile }: { onOpenProfile: () => void }) {
 
 export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomaticMode, onToggleAutomaticMode, profileOpen, onProfileOpenChange, preferences, onUpdatePreferences, syncStatus, stats }: HeaderProps) {
     const [localProfileOpen, setLocalProfileOpen] = useState(false)
+    const [backgroundPickerOpen, setBackgroundPickerOpen] = useState(false)
     const isProfileOpen = profileOpen ?? localProfileOpen
     const setProfileOpen = onProfileOpenChange ?? setLocalProfileOpen
 
@@ -131,6 +133,24 @@ export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomatic
                         </Button>
                         <Button
                             variant="ghost"
+                            size="icon"
+                            onClick={() => setBackgroundPickerOpen(true)}
+                            title="Cambia sfondo"
+                        >
+                            <Image className="w-5 h-5" />
+                        </Button>
+                        {preferences.backgroundMode !== 'default' && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => onUpdatePreferences({ backgroundMode: 'default', backgroundImage: undefined })}
+                                title="Ripristina sfondo"
+                            >
+                                <RotateCcw className="w-5 h-5" />
+                            </Button>
+                        )}
+                        <Button
+                            variant="ghost"
                             onClick={onNewGame}
                             title="New Game (Ctrl/Cmd+N)"
                             className="whitespace-nowrap"
@@ -154,6 +174,15 @@ export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomatic
                 preferences={preferences}
                 onUpdatePreferences={onUpdatePreferences}
                 stats={stats}
+            />
+
+            <BackgroundPickerDialog
+                open={backgroundPickerOpen}
+                onClose={() => setBackgroundPickerOpen(false)}
+                onSave={(mode, image) => {
+                    onUpdatePreferences({ backgroundMode: mode, backgroundImage: image })
+                    setBackgroundPickerOpen(false)
+                }}
             />
         </>
     )

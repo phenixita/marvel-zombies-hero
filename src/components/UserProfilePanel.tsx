@@ -33,10 +33,9 @@ import { useAuth } from '@/hooks/useAuth'
 import { ThemePreference, UserPreferences } from '@/lib/UserPreferences'
 import { UserStats } from '@/lib/UserStats'
 import { deleteAllCloudData } from '@/lib/cloudDataService'
-import { Cloud, LogOut, Zap, Trash2, Gamepad2, Users, Dice1, Monitor, Image } from 'lucide-react'
+import { Cloud, LogOut, Zap, Trash2, Gamepad2, Users, Dice1, Monitor } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { BackgroundPickerDialog } from '@/components/BackgroundPickerDialog'
 
 interface UserProfilePanelProps {
   open: boolean
@@ -57,7 +56,6 @@ export function UserProfilePanel({ open, onClose, preferences, onUpdatePreferenc
   const { user, signOut } = useAuth()
   const [deleteStep, setDeleteStep] = useState<0 | 1>(0)
   const [deleting, setDeleting] = useState(false)
-  const [backgroundPickerOpen, setBackgroundPickerOpen] = useState(false)
 
   if (!user) return null
 
@@ -203,34 +201,6 @@ export function UserProfilePanel({ open, onClose, preferences, onUpdatePreferenc
               </SelectContent>
             </Select>
           </div>
-
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Image className="w-4 h-4 text-muted-foreground" />
-              <Label>Sfondo</Label>
-            </div>
-            <div className="flex items-center gap-2">
-              {preferences.backgroundMode !== 'default' && preferences.backgroundImage && (
-                <img
-                  src={preferences.backgroundImage}
-                  alt="Sfondo attuale"
-                  className="w-10 h-10 rounded object-cover border border-border"
-                />
-              )}
-              <Button variant="outline" size="sm" onClick={() => setBackgroundPickerOpen(true)}>
-                Cambia sfondo
-              </Button>
-              {preferences.backgroundMode !== 'default' && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onUpdatePreferences({ backgroundMode: 'default', backgroundImage: undefined })}
-                >
-                  Rimuovi
-                </Button>
-              )}
-            </div>
-          </div>
         </div>
 
         <Separator />
@@ -289,15 +259,6 @@ export function UserProfilePanel({ open, onClose, preferences, onUpdatePreferenc
           </Button>
         </SheetFooter>
       </SheetContent>
-
-      <BackgroundPickerDialog
-        open={backgroundPickerOpen}
-        onClose={() => setBackgroundPickerOpen(false)}
-        onSave={(mode, image) => {
-          onUpdatePreferences({ backgroundMode: mode, backgroundImage: image })
-          setBackgroundPickerOpen(false)
-        }}
-      />
     </Sheet>
   )
 }
