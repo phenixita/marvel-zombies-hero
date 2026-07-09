@@ -6,6 +6,7 @@ import { HeroGrid } from '@/components/HeroGrid'
 import { KeyboardShortcuts } from '@/components/KeyboardShortcuts'
 import { PhaseConfirmationDialog } from '@/components/PhaseConfirmationDialog'
 import { StartTurnDialog } from '@/components/StartTurnDialog'
+import { Button } from '@/components/ui/button'
 import { useGameDialogs } from '@/hooks/useGameDialogs'
 import { usePersistentState } from '@/hooks/usePersistentState'
 import { Toaster, toast } from 'sonner'
@@ -58,6 +59,7 @@ function App() {
   const { setTheme } = useTheme()
   const { stats, incrementStat } = useUserStats()
   const [profileOpen, setProfileOpen] = useState(false)
+  const [emptyStateDialogKey, setEmptyStateDialogKey] = useState(0)
 
   // Cloud sync
   const { syncStatus, conflict, resolveConflict } = useCloudSync({
@@ -498,6 +500,7 @@ function App() {
     return (
       <>
         <GameInitDialog
+          key={emptyStateDialogKey}
           onStartNew={handleStartNewGame}
           onContinue={handleContinueGame}
           archivedGames={gameState?.gameHistory ?? []}
@@ -510,6 +513,11 @@ function App() {
               Marvel Zombies
             </h1>
             <p className="text-muted-foreground">Hero Turn Tracker</p>
+            <div className="flex justify-center">
+              <Button onClick={() => setEmptyStateDialogKey((current) => current + 1)}>
+                New Game
+              </Button>
+            </div>
             {!user && (
               <button
                 onClick={signIn}
