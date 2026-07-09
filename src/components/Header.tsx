@@ -61,7 +61,7 @@ function AuthSection({ onOpenProfile }: { onOpenProfile: () => void }) {
                     />
                     <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                 </Avatar>
-                <span className="text-sm font-rajdhani font-bold uppercase tracking-wide truncate max-w-[120px]">
+                <span className="hidden sm:inline text-sm font-rajdhani font-bold uppercase tracking-wide truncate max-w-[120px]">
                     {user.displayName ?? user.email ?? 'Player'}
                 </span>
             </button>
@@ -89,15 +89,15 @@ export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomatic
 
     return (
         <>
-            <div className="container mx-auto px-4 py-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-4">
-                <div className="min-w-[12rem] flex-1">
-                    <h1 className="font-rajdhani font-bold text-3xl uppercase tracking-tight text-accent">
+            <div className="container mx-auto px-3 py-2 sm:px-6 sm:py-4 lg:px-8 flex flex-wrap items-center justify-between gap-2 sm:gap-4">
+                <div className="min-w-[8rem] flex-1">
+                    <h1 className="font-rajdhani font-bold text-2xl sm:text-3xl uppercase tracking-tight text-accent">
                         Marvel Zombies
                     </h1>
-                    <p className="text-sm text-muted-foreground">Hero Turn Tracker</p>
+                    <p className="hidden sm:block text-sm text-muted-foreground">Hero Turn Tracker</p>
                 </div>
 
-                <div className="relative z-20 flex flex-wrap items-center justify-end gap-4">
+                <div className="relative z-20 flex flex-wrap items-center justify-end gap-2 sm:gap-4">
                     {/* Action Panel */}
                     <div className="flex items-center gap-3 border-l border-border pl-3">
                         <Button
@@ -128,6 +128,7 @@ export function Header({ onShowKeyboardHelp, onNewGame, onStartTurn, isAutomatic
                             size="icon"
                             onClick={onShowKeyboardHelp}
                             title="Keyboard Shortcuts (Ctrl/Cmd+K)"
+                            className="hidden sm:inline-flex"
                         >
                             <KeyboardIcon className="w-5 h-5" />
                         </Button>

@@ -95,7 +95,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
         className
       )}
     >
-      <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-x-8 gap-y-5 p-5 sm:p-6 flex-1">
+      <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-x-2 gap-y-3 p-3 sm:gap-x-8 sm:gap-y-5 sm:p-5 md:p-6 flex-1">
         {/* Column 1: Hunger Scale (spans 3 rows) */}
         <div className={cn(
           "row-span-3 flex flex-col items-center justify-center",
@@ -109,7 +109,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
         </div>
 
         {/* Row 1, Columns 2-4: Health, Name and Stats */}
-        <div className="col-span-3 flex items-center justify-between gap-6">
+        <div className="col-span-3 flex items-center justify-between gap-2 sm:gap-6">
 
 
           <div className="flex-1 flex flex-col gap-2">
@@ -125,7 +125,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
             ) : (
               <div className="group flex items-center gap-2">
                 <h2 className={cn(
-                  'font-rajdhani font-bold text-3xl uppercase tracking-tight leading-none',
+                  'font-rajdhani font-bold text-xl sm:text-3xl uppercase tracking-tight leading-none',
                   isActiveTurn ? 'text-accent-11' : (hasPlayed ? 'text-muted-foreground/60' : 'text-foreground')
                 )}>
                   {hero.name}
@@ -143,7 +143,7 @@ export function HeroCard({ hero, onUpdateHero, onEditTrait, onEditByStander, isA
 
             <button
               onClick={() => setPhotoPickerOpen(true)}
-              className="self-start w-16 h-16 rounded-full overflow-hidden border-2 border-dashed border-muted-foreground/30 hover:border-accent/60 transition-colors flex items-center justify-center shrink-0"
+              className="self-start w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-dashed border-muted-foreground/30 hover:border-accent/60 transition-colors flex items-center justify-center shrink-0"
               title="Cambia foto personaggio"
             >
               {hero.photo ? (
